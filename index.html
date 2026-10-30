@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#f5f7fb">
   <meta name="description" content="לוח עבודה יומי לניהול העסק והצוות במקום אחד">
   <title>עסקלי — ניהול העסק</title>
+  <link rel="stylesheet" href="./calendar.css">
   <style>
     :root {
       color-scheme: light;
@@ -312,14 +313,14 @@
   <div class="app-shell">
     <div class="overlay" id="overlay" aria-hidden="true"></div>
     <aside class="sidebar" id="sidebar" aria-label="תפריט ראשי">
-      <a class="brand" href="#home" aria-label="עסקלי — ראשי">
+      <a class="brand" href="#home" data-nav="home" aria-label="עסקלי — ראשי">
         <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18.5V9.2L12 4l8 5.2v9.3h-5.4v-5.7H9.4v5.7H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8 9.2 4 2.6 4-2.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         <span><span class="brand-name">עסקלי</span><span class="brand-caption">העסק שלך, מסודר</span></span>
       </a>
       <div class="side-label">סביבת עבודה</div>
       <nav class="nav-list">
         <a class="nav-link active" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>דף הבית</a>
-        <a class="nav-link" href="#calendar" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן עבודה</a>
+        <a class="nav-link" href="#calendarPage" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן עבודה</a>
         <a class="nav-link" href="#tasks" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות<span class="nav-badge" id="navTaskCount">4</span></a>
         <a class="nav-link" href="#shopping" data-nav="shopping"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8.5h14l-1.2 11H6.2L5 8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3M9 13.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>רשימת קניות</a>
         <a class="nav-link" href="#reminders" data-nav="reminders"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>תזכורות<span class="nav-badge">2</span></a>
@@ -335,7 +336,7 @@
       <header class="topbar">
         <div class="topbar-start">
           <button class="icon-button menu-button" id="menuButton" aria-label="פתח תפריט"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
-          <a class="mobile-brand" href="#home"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18.5V9.2L12 4l8 5.2v9.3h-5.4v-5.7H9.4v5.7H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8 9.2 4 2.6 4-2.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>עסקלי</a>
+          <a class="mobile-brand" href="#home" data-nav="home"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 18.5V9.2L12 4l8 5.2v9.3h-5.4v-5.7H9.4v5.7H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8 9.2 4 2.6 4-2.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>עסקלי</a>
           <label class="search-box" id="searchBox"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><input id="searchInput" type="search" placeholder="חיפוש משימה או לקוח..." aria-label="חיפוש"></label>
         </div>
         <div class="topbar-actions">
@@ -345,7 +346,7 @@
         </div>
       </header>
 
-      <div class="page-content">
+      <div class="page-content" id="dashboardPage">
         <section class="welcome-row" aria-labelledby="welcomeTitle">
           <div><p class="eyebrow" id="todayLabel">יום עבודה חדש</p><h1 id="welcomeTitle">בוקר טוב 👋</h1><p class="welcome-subtitle">הנה מה שקורה בעסק שלך היום.</p></div>
           <button class="primary-button" id="addTaskButton"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>הוספת משימה</button>
@@ -362,8 +363,8 @@
 
         <div class="dashboard-grid">
           <div class="column">
-            <section class="panel" id="calendar">
-              <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>היום ביומן</h2><div class="panel-subtitle" id="calendarDate">תוכנית היום שלך</div></div></div><a href="#calendar" class="text-link" data-coming="יומן העבודה">לכל היומן ←</a></div>
+            <section class="panel" id="calendarPreview">
+              <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>היום ביומן</h2><div class="panel-subtitle" id="calendarDate">תוכנית היום שלך</div></div></div><a href="#calendarPage" class="text-link" data-nav="calendar">לכל היומן ←</a></div>
               <div class="event-list" data-search-group>
                 <div class="event" data-search="ישיבת צוות תכנון שבועי"><div class="event-time">09:30</div><span class="event-dot"></span><div><div class="event-title">ישיבת צוות</div><div class="event-meta">תכנון שבועי · חדר ישיבות</div></div><span class="event-tag">צוות</span></div>
                 <div class="event" data-search="שיחה עם דנה לוי לקוחה"><div class="event-time">11:00</div><span class="event-dot"></span><div><div class="event-title">שיחה עם דנה לוי</div><div class="event-meta">מעקב הצעת מחיר</div></div><span class="event-tag">לקוחה</span></div>
@@ -416,12 +417,15 @@
           </div>
         </div>
       </div>
+      <section class="page-content" id="calendarPage" hidden>
+        <div id="calendar-root"></div>
+      </section>
       <footer style="padding:0 24px 22px;text-align:center;color:#a2acb8;font-size:9px">עסקלי · תצוגת אבטיפוס</footer>
     </main>
 
     <nav class="mobile-bottom-nav" aria-label="ניווט מהיר">
       <a href="#home" class="mobile-nav-link active" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>ראשי</a>
-      <a href="#calendar" class="mobile-nav-link" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן</a>
+      <a href="#calendarPage" class="mobile-nav-link" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן</a>
       <a href="#tasks" class="mobile-nav-link" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות</a>
       <a href="#customers" class="mobile-nav-link" data-nav="customers"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 20c.5-3.3 2.5-5 6.2-5s5.7 1.7 6.2 5m2.5-6c2 .8 3 2.6 3.1 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>לקוחות</a>
     </nav>
@@ -532,10 +536,17 @@
     document.getElementById('menuButton').addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
     overlay.addEventListener('click', closeMenu);
 
-    document.querySelectorAll('[data-nav]').forEach(link => link.addEventListener('click', () => {
+    document.querySelectorAll('[data-nav]').forEach(link => link.addEventListener('click', event => {
+      event.preventDefault();
       const key = link.dataset.nav;
       document.querySelectorAll('[data-nav]').forEach(item => item.classList.toggle('active', item.dataset.nav === key));
       closeMenu();
+      const showCalendar = key === 'calendar';
+      document.getElementById('dashboardPage').hidden = showCalendar;
+      document.getElementById('calendarPage').hidden = !showCalendar;
+      if (!showCalendar && key !== 'home' && document.getElementById(key)) {
+        setTimeout(() => document.getElementById(key).scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+      }
       if (key === 'settings') { showToast('הגדרות סביבת העבודה יתווספו בהמשך.'); }
     }));
     document.querySelectorAll('[data-coming]').forEach(link => link.addEventListener('click', event => {
@@ -545,5 +556,6 @@
     document.getElementById('notificationButton').addEventListener('click', () => showToast('יש לך 2 תזכורות להיום.'));
     refreshTaskCount();
   </script>
+  <script type="module" src="./calendar.js"></script>
 </body>
 </html>
