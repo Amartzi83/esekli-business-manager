@@ -5,11 +5,8 @@ const HOUR_HEIGHT = 56;
 
 const demoOrganization = { id: "org-demo", name: "העסק שלי", timeZone: "Asia/Jerusalem" };
 const demoMembers = [
-  { id: "u-michal", name: "מיכל רז", initials: "מ", color: "teal", role: "admin" },
-  { id: "u-amir", name: "אמיר לוי", initials: "א", color: "blue", role: "member" },
-  { id: "u-dana", name: "דנה כהן", initials: "ד", color: "peach", role: "member" },
-  { id: "u-avi", name: "אבי מזרחי", initials: "א", color: "sand", role: "member" },
-  { id: "u-yossi", name: "יוסי ברק", initials: "י", color: "lilac", role: "member" }
+  { id: "u-nahorai", name: "נהוראי מרציאנו", initials: "נ", color: "teal", role: "admin" },
+  { id: "u-business-partner", name: "שותף לעסק", initials: "ש", color: "blue", role: "member" }
 ];
 const demoTasks = [
   { id: "task-1", title: "לעבור על הזמנת הספקים", organizationId: "org-demo" },
@@ -64,12 +61,12 @@ function makeDemoApi(organization, members, currentUser) {
     return date.toISOString();
   }
   let events = [
-    { id: "event-1", organizationId: organization.id, title: "ישיבת צוות", startAt: at(0, "09:30"), endAt: at(0, "10:30"), allDay: false, location: "חדר ישיבות", description: "תכנון שבועי ומעבר על משימות פתוחות.", participantIds: ["u-michal", "u-amir", "u-dana"], taskId: "task-1", reminderMinutes: 15, createdById: "u-michal" },
-    { id: "event-2", organizationId: organization.id, title: "שיחה עם דנה לוי", startAt: at(0, "11:00"), endAt: at(0, "11:45"), allDay: false, location: "שיחת טלפון", description: "מעקב הצעת מחיר.", participantIds: ["u-michal", "u-dana"], taskId: "task-2", reminderMinutes: 30, createdById: "u-dana" },
-    { id: "event-3", organizationId: organization.id, title: "קבלת אספקה", startAt: at(0, "13:30"), endAt: at(0, "14:15"), allDay: false, location: "מחסן", description: "בדיקת מלאי והזמנה.", participantIds: ["u-michal", "u-avi"], taskId: null, reminderMinutes: null, createdById: "u-michal" },
-    { id: "event-4", organizationId: organization.id, title: "הכנת הצעת מחיר", startAt: at(1, "15:00"), endAt: at(1, "16:00"), allDay: false, location: "", description: "", participantIds: ["u-michal", "u-amir"], taskId: "task-3", reminderMinutes: 60, createdById: "u-michal" },
-    { id: "event-5", organizationId: organization.id, title: "יום צילום מוצרים", startAt: at(2, "00:00"), endAt: at(3, "00:00"), allDay: true, location: "סטודיו", description: "", participantIds: ["u-michal", "u-dana", "u-avi"], taskId: null, reminderMinutes: 1440, createdById: "u-amir" },
-    { id: "event-6", organizationId: organization.id, title: "פגישת תיאום", startAt: at(3, "10:00"), endAt: at(3, "11:00"), allDay: false, location: "חדר ישיבות", description: "", participantIds: ["u-michal", "u-yossi"], taskId: null, reminderMinutes: 15, createdById: "u-michal" }
+    { id: "event-1", organizationId: organization.id, title: "ישיבת צוות", startAt: at(0, "09:30"), endAt: at(0, "10:30"), allDay: false, location: "חדר ישיבות", description: "תכנון שבועי ומעבר על משימות פתוחות.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-1", reminderMinutes: 15, createdById: "u-nahorai" },
+    { id: "event-2", organizationId: organization.id, title: "שיחה עם דנה לוי", startAt: at(0, "11:00"), endAt: at(0, "11:45"), allDay: false, location: "שיחת טלפון", description: "מעקב הצעת מחיר.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-2", reminderMinutes: 30, createdById: "u-business-partner" },
+    { id: "event-3", organizationId: organization.id, title: "קבלת אספקה", startAt: at(0, "13:30"), endAt: at(0, "14:15"), allDay: false, location: "מחסן", description: "בדיקת מלאי והזמנה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: null, createdById: "u-nahorai" },
+    { id: "event-4", organizationId: organization.id, title: "הכנת הצעת מחיר", startAt: at(1, "15:00"), endAt: at(1, "16:00"), allDay: false, location: "", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-3", reminderMinutes: 60, createdById: "u-nahorai" },
+    { id: "event-5", organizationId: organization.id, title: "יום צילום מוצרים", startAt: at(2, "00:00"), endAt: at(3, "00:00"), allDay: true, location: "סטודיו", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 1440, createdById: "u-business-partner" },
+    { id: "event-6", organizationId: organization.id, title: "פגישת תיאום", startAt: at(3, "10:00"), endAt: at(3, "11:00"), allDay: false, location: "חדר ישיבות", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 15, createdById: "u-nahorai" }
   ];
   const taskMap = demoTasks.map((task) => Object.assign({}, task, { organizationId: organization.id }));
   function mayEdit(record) {
