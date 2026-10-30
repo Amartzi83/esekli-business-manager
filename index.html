@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#f5f7fb">
   <meta name="description" content="לוח עבודה יומי לניהול העסק והצוות במקום אחד">
   <title>עסקלי — ניהול העסק</title>
+  <script>
+    try { if (localStorage.getItem('esekli-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (_) {}
+  </script>
   <link rel="stylesheet" href="./calendar.css">
   <style>
     :root {
@@ -307,6 +310,92 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
     }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #e5edf6; --muted: #9baabd; --line: #2c394b; --canvas: #0e1724; --paper: #172334; --navy: #0a1422;
+      --blue: #82aaff; --blue-soft: #1d2c49; --teal: #45c4b2; --teal-soft: #163a38; --orange: #f4b96f; --orange-soft: #3b2c1b;
+      --red: #f28b8b; --red-soft: #3d252a; --shadow: 0 10px 34px rgba(0,0,0,.22);
+    }
+    html[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
+    html[data-theme="dark"] .topbar { background: rgba(23,35,52,.9); border-color: var(--line); }
+    html[data-theme="dark"] .mobile-brand, html[data-theme="dark"] h1, html[data-theme="dark"] .panel-heading h2,
+    html[data-theme="dark"] .event-title, html[data-theme="dark"] .task-name, html[data-theme="dark"] .reminder-copy strong,
+    html[data-theme="dark"] .client-copy strong { color: var(--ink); }
+    html[data-theme="dark"] .icon-button, html[data-theme="dark"] .field-input, html[data-theme="dark"] .secondary-button { background: #1a293c; color: #d8e2ee; border-color: var(--line); }
+    html[data-theme="dark"] .search-box, html[data-theme="dark"] .search-box.expanded { background: #142033; border-color: var(--line); color: #a9b6c7; }
+    html[data-theme="dark"] .search-box input { color: var(--ink); }
+    html[data-theme="dark"] .search-box input::placeholder, html[data-theme="dark"] .search-box.expanded input::placeholder { color: #8f9db0; }
+    html[data-theme="dark"] .top-avatar { color: #f3d6a6; background: #463823; }
+    html[data-theme="dark"] .notice-dot { border-color: var(--paper); }
+    html[data-theme="dark"] .prototype-note, html[data-theme="dark"] .stat-card, html[data-theme="dark"] .panel,
+    html[data-theme="dark"] #taskDialog, html[data-theme="dark"] .settings-card { background: var(--paper); border-color: var(--line); color: var(--ink); }
+    html[data-theme="dark"] .prototype-note, html[data-theme="dark"] .stat-label, html[data-theme="dark"] .panel-subtitle,
+    html[data-theme="dark"] .stat-foot, html[data-theme="dark"] .event-meta, html[data-theme="dark"] .task-meta,
+    html[data-theme="dark"] .reminder-copy span, html[data-theme="dark"] .client-copy span, html[data-theme="dark"] .client-date,
+    html[data-theme="dark"] .empty-hint, html[data-theme="dark"] .field-label { color: #9baabd; }
+    html[data-theme="dark"] .event, html[data-theme="dark"] .task-row, html[data-theme="dark"] .shopping-row { border-color: #2b394c; }
+    html[data-theme="dark"] .event-time, html[data-theme="dark"] .shopping-name { color: #bcc8d7; }
+    html[data-theme="dark"] .event-tag { color: #b9cbef; background: #22324c; }
+    html[data-theme="dark"] .task-check, html[data-theme="dark"] .shopping-check { background: #172334; border-color: #526176; }
+    html[data-theme="dark"] .task-owner { color: #c0d0df; background: #2b3b4d; }
+    html[data-theme="dark"] .task-owner.peach { color: #f0c4a4; background: #3e2e27; }
+    html[data-theme="dark"] .task-owner.mint { color: #a6e1d4; background: #1c3d39; }
+    html[data-theme="dark"] .reminder { background: #1b293b; }
+    html[data-theme="dark"] .client-avatar { color: #c5d8e6; background: #293b4b; }
+    html[data-theme="dark"] .client-avatar.lilac { color: #d1c5f1; background: #322d47; }
+    html[data-theme="dark"] .client-avatar.sand { color: #e8c797; background: #3c3326; }
+    html[data-theme="dark"] .toast { background: #21463f; color: #e3f6f0; border-color: #35645b; }
+    html[data-theme="dark"] .close-button { background: #253449; color: #d1dce8; }
+    html[data-theme="dark"] .mobile-bottom-nav { background: rgba(18,29,44,.96); border-color: var(--line); }
+    html[data-theme="dark"] .mobile-nav-link { color: #9baabd; }
+    html[data-theme="dark"] .cal-app { --cal-line: #2c394b; --cal-muted: #9baabd; --cal-green: #45c4b2; --cal-soft: #163a38; }
+    html[data-theme="dark"] #calendarPage .cal-summary-card, html[data-theme="dark"] #calendarPage .cal-panel,
+    html[data-theme="dark"] #calendarPage .cal-filter-menu, html[data-theme="dark"] #calendarPage .cal-dialog { background: var(--paper); border-color: var(--line); color: var(--ink); }
+    html[data-theme="dark"] #calendarPage .cal-summary-card b, html[data-theme="dark"] #calendarPage .cal-date-controls h2,
+    html[data-theme="dark"] #calendarPage .cal-day-title, html[data-theme="dark"] #calendarPage .cal-dialog-head h2,
+    html[data-theme="dark"] #calendarPage .cal-dialog>h2 { color: var(--ink); }
+    html[data-theme="dark"] #calendarPage .cal-toolbar, html[data-theme="dark"] #calendarPage .cal-week-head,
+    html[data-theme="dark"] #calendarPage .cal-week-day, html[data-theme="dark"] #calendarPage .cal-week-column,
+    html[data-theme="dark"] #calendarPage .cal-day-row>div, html[data-theme="dark"] #calendarPage .cal-day-title,
+    html[data-theme="dark"] #calendarPage .cal-month-cell, html[data-theme="dark"] #calendarPage .cal-all-day,
+    html[data-theme="dark"] #calendarPage .cal-legend { border-color: #2b394c; }
+    html[data-theme="dark"] #calendarPage .cal-date-controls>button, html[data-theme="dark"] #calendarPage .cal-filter,
+    html[data-theme="dark"] #calendarPage .cal-view-tabs button.selected, html[data-theme="dark"] #calendarPage .cal-dialog-head>button,
+    html[data-theme="dark"] #calendarPage .cal-secondary, html[data-theme="dark"] #calendarPage .cal-editor input:not([type=checkbox]),
+    html[data-theme="dark"] #calendarPage .cal-editor select, html[data-theme="dark"] #calendarPage .cal-editor textarea {
+      background: #1a293c; border-color: #35465c; color: #d8e2ee;
+    }
+    html[data-theme="dark"] #calendarPage .cal-view-tabs { background: #111d2c; }
+    html[data-theme="dark"] #calendarPage .cal-week-column { background: #172334; }
+    html[data-theme="dark"] #calendarPage .cal-hour-slot { border-color: #2b394c; }
+    html[data-theme="dark"] #calendarPage .cal-hour-slot:hover, html[data-theme="dark"] #calendarPage .cal-day-row>div>button:first-child:hover,
+    html[data-theme="dark"] #calendarPage .cal-month-cell:hover { background: #1e3044; }
+    html[data-theme="dark"] #calendarPage .cal-week-event, html[data-theme="dark"] #calendarPage .cal-event { background: #173b37; color: #a8e7d8; border-color: #398777; }
+    html[data-theme="dark"] #calendarPage .cal-week-event.linked, html[data-theme="dark"] #calendarPage .cal-event.linked { background: #1f3150; color: #b6cbff; border-color: #597bb8; }
+    html[data-theme="dark"] #calendarPage .cal-dialog-head small, html[data-theme="dark"] #calendarPage .cal-detail-list b,
+    html[data-theme="dark"] #calendarPage .cal-detail-list span, html[data-theme="dark"] #calendarPage .cal-editor form>label,
+    html[data-theme="dark"] #calendarPage .cal-editor form .cal-form-row>label, html[data-theme="dark"] #calendarPage .cal-editor legend,
+    html[data-theme="dark"] #calendarPage .cal-member-list label { color: #aab8c9; }
+    html[data-theme="dark"] #calendarPage .cal-dialog-actions, html[data-theme="dark"] #calendarPage .cal-editor fieldset { border-color: var(--line); }
+    html[data-theme="dark"] #calendarPage .cal-member-list label { background: #1a293c; border-color: #35465c; }
+    html[data-theme="dark"] #calendarPage .teal { background: #1c403b; color: #a6e5d4; }
+    html[data-theme="dark"] #calendarPage .blue { background: #223653; color: #b8ccf1; }
+    html[data-theme="dark"] #calendarPage .peach { background: #432f27; color: #e9c1a5; }
+    html[data-theme="dark"] #calendarPage .sand { background: #403821; color: #e7d29d; }
+    html[data-theme="dark"] #calendarPage .lilac { background: #332e47; color: #d0c4f0; }
+    html[data-theme="dark"] #calendarPage .cal-overlay { background: rgba(3,8,15,.75); }
+    .settings-card { padding: 21px; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 0; border-top: 1px solid var(--line); }
+    .setting-copy strong, .setting-copy small { display: block; }
+    .setting-copy strong { color: var(--ink); font-size: 13px; }
+    .setting-copy small { margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .setting-switch { width: 48px; height: 28px; padding: 3px; border: 0; border-radius: 20px; background: #cbd4e0; transition: background .18s; }
+    .setting-switch span { display: block; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px #0b172426; transition: transform .18s; }
+    .setting-switch[aria-checked="true"] { background: var(--teal); }
+    .setting-switch[aria-checked="true"] span { transform: translateX(-20px); }
+    html[data-theme="dark"] .setting-switch:not([aria-checked="true"]) { background: #44536a; }
+    html[data-theme="dark"] .setting-switch span { background: #e8eef5; }
   </style>
 </head>
 <body>
@@ -340,6 +429,7 @@
           <label class="search-box" id="searchBox"><svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><input id="searchInput" type="search" placeholder="חיפוש משימה או לקוח..." aria-label="חיפוש"></label>
         </div>
         <div class="topbar-actions">
+          <button class="icon-button" id="themeToggle" type="button" aria-label="הפעלת מצב כהה" title="הפעלת מצב כהה"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.4 15.2A8.6 8.6 0 0 1 8.8 3.6a8.7 8.7 0 1 0 11.6 11.6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="icon-button" id="notificationButton" aria-label="התראות"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="notice-dot"></span></button>
           <div class="top-avatar" aria-label="הפרופיל שלי">מ</div>
           <div class="top-user"><strong>החשבון שלי</strong><span>מנהל מערכת</span></div>
@@ -420,6 +510,12 @@
       <section class="page-content" id="calendarPage" hidden>
         <div id="calendar-root"></div>
       </section>
+      <section class="page-content settings-page" id="settingsPage" hidden>
+        <div class="welcome-row"><div><p class="eyebrow">התאמה אישית</p><h1>הגדרות</h1><p class="welcome-subtitle">התאם את סביבת העבודה להעדפה שלך.</p></div></div>
+        <section class="panel settings-card"><div class="panel-heading"><div><h2>מראה</h2><div class="panel-subtitle">ההעדפה נשמרת במכשיר הזה.</div></div></div>
+          <div class="setting-row"><div class="setting-copy"><strong>מצב כהה</strong><small>ממשק כהה נוח לעבודה בתאורה חלשה.</small></div><button class="setting-switch" id="themeToggleSettings" type="button" role="switch" aria-label="מצב כהה" aria-checked="false"><span></span></button></div>
+        </section>
+      </section>
       <footer style="padding:0 24px 22px;text-align:center;color:#a2acb8;font-size:9px">עסקלי · תצוגת אבטיפוס</footer>
     </main>
 
@@ -444,6 +540,28 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSettings = document.getElementById('themeToggleSettings');
+    function applyTheme(isDark, save = true) {
+      const theme = isDark ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      if (!isDark) delete document.documentElement.dataset.theme;
+      if (save) { try { localStorage.setItem('esekli-theme', theme); } catch (_) {} }
+      if (themeMeta) themeMeta.content = isDark ? '#0e1724' : '#f5f7fb';
+      if (themeToggle) {
+        themeToggle.setAttribute('aria-label', isDark ? 'הפעלת מצב בהיר' : 'הפעלת מצב כהה');
+        themeToggle.title = isDark ? 'הפעלת מצב בהיר' : 'הפעלת מצב כהה';
+        themeToggle.innerHTML = isDark
+          ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3.8" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2m0 15v2m9.5-9.5h-2m-15 0h-2m16.2-6.7-1.4 1.4m-10.6 10.6-1.4 1.4m13.4 0-1.4-1.4M6.7 6.7 5.3 5.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.4 15.2A8.6 8.6 0 0 1 8.8 3.6a8.7 8.7 0 1 0 11.6 11.6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+      if (themeToggleSettings) themeToggleSettings.setAttribute('aria-checked', String(isDark));
+    }
+    applyTheme(document.documentElement.dataset.theme === 'dark', false);
+    themeToggle.addEventListener('click', () => applyTheme(document.documentElement.dataset.theme !== 'dark'));
+    themeToggleSettings.addEventListener('click', () => applyTheme(document.documentElement.dataset.theme !== 'dark'));
+
     const dateFormatter = new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
     const today = new Date();
     document.getElementById('todayLabel').textContent = dateFormatter.format(today);
@@ -542,12 +660,13 @@
       document.querySelectorAll('[data-nav]').forEach(item => item.classList.toggle('active', item.dataset.nav === key));
       closeMenu();
       const showCalendar = key === 'calendar';
-      document.getElementById('dashboardPage').hidden = showCalendar;
+      const showSettings = key === 'settings';
+      document.getElementById('dashboardPage').hidden = showCalendar || showSettings;
       document.getElementById('calendarPage').hidden = !showCalendar;
+      document.getElementById('settingsPage').hidden = !showSettings;
       if (!showCalendar && key !== 'home' && document.getElementById(key)) {
         setTimeout(() => document.getElementById(key).scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
       }
-      if (key === 'settings') { showToast('הגדרות סביבת העבודה יתווספו בהמשך.'); }
     }));
     document.querySelectorAll('[data-coming]').forEach(link => link.addEventListener('click', event => {
       event.preventDefault();
