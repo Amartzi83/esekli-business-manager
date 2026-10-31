@@ -7,7 +7,9 @@ const pagePath = new URL('./index.html', import.meta.url);
 const page = await readFile(fileURLToPath(pagePath));
 const assetRoutes = new Map([
   ['/calendar.js', { file: './calendar.js', type: 'text/javascript; charset=utf-8' }],
-  ['/calendar.css', { file: './calendar.css', type: 'text/css; charset=utf-8' }]
+  ['/calendar.css', { file: './calendar.css', type: 'text/css; charset=utf-8' }],
+  ['/visits.js', { file: './visits.js', type: 'text/javascript; charset=utf-8' }],
+  ['/visits.css', { file: './visits.css', type: 'text/css; charset=utf-8' }]
 ]);
 
 const server = createServer(async (request, response) => {

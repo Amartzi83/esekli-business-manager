@@ -13,6 +13,7 @@
     } catch (_) { document.documentElement.dataset.theme = 'dark'; }
   </script>
   <link rel="stylesheet" href="./calendar.css">
+  <link rel="stylesheet" href="./visits.css">
   <style>
     :root {
       color-scheme: light;
@@ -303,7 +304,7 @@
       .event { grid-template-columns: 43px 11px minmax(0, 1fr) auto; gap: 8px; min-height: 62px; }
       .event-time { font-size: 10px; }
       .event-tag { padding: 4px 6px; font-size: 8px; }
-      .mobile-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 8; display: grid; grid-template-columns: repeat(4, 1fr); padding: 7px 8px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #e9edf2; background: rgba(255,255,255,.95); backdrop-filter: blur(12px); }
+      .mobile-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 8; display: grid; grid-template-columns: repeat(5, 1fr); padding: 7px 8px max(7px, env(safe-area-inset-bottom)); border-top: 1px solid #e9edf2; background: rgba(255,255,255,.95); backdrop-filter: blur(12px); }
       .mobile-nav-link { display: grid; justify-items: center; gap: 3px; padding: 4px 0; color: #8a96a5; font-size: 9px; }
       .mobile-nav-link svg { width: 18px; height: 18px; }
       .mobile-nav-link.active { color: var(--teal); font-weight: 700; }
@@ -527,7 +528,8 @@
       <div class="side-label">סביבת עבודה</div>
       <nav class="nav-list">
         <a class="nav-link active" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>דף הבית</a>
-        <a class="nav-link" href="#calendarPage" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן עבודה</a>
+        <a class="nav-link" href="#visitsPage" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 7.2c.8-1.4 2-2 3.3-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>ביקורי גינות</a>
+        <a class="nav-link" href="#calendarPage" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>קווי עבודה</a>
         <a class="nav-link" href="#tasks" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות<span class="nav-badge" id="navTaskCount">4</span></a>
         <a class="nav-link" href="#shopping" data-nav="shopping"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8.5h14l-1.2 11H6.2L5 8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3M9 13.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>רשימת קניות</a>
         <a class="nav-link" href="#reminders" data-nav="reminders"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>תזכורות<span class="nav-badge">2</span></a>
@@ -564,7 +566,7 @@
 
         <section class="stats-grid" aria-label="סיכום היום">
           <article class="stat-card"><div class="stat-top"><span class="stat-label">משימות פתוחות</span><span class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="stat-value" id="openTaskCount">4</div><div class="stat-foot"><span class="up">2 להיום</span> · כדאי להתחיל בזמן</div></article>
-          <article class="stat-card"><div class="stat-top"><span class="stat-label">אירועים ביומן</span><span class="stat-icon teal"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div><div class="stat-value">3</div><div class="stat-foot">הבא מתחיל ב־<span class="up">09:30</span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-label">ביקורי גינות היום</span><span class="stat-icon teal"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/></svg></span></div><div class="stat-value">6</div><div class="stat-foot">הביקור הבא ב־<span class="up">08:00</span></div></article>
           <article class="stat-card"><div class="stat-top"><span class="stat-label">תזכורות להיום</span><span class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="stat-value">2</div><div class="stat-foot">הקרובה ב־<span>11:45</span></div></article>
           <article class="stat-card"><div class="stat-top"><span class="stat-label">לקוחות פעילים</span><span class="stat-icon red"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 20c.5-3.3 2.5-5 6.2-5s5.7 1.7 6.2 5M16 5.2a3.5 3.5 0 0 1 0 6.7m2.1 2.5c2 .8 3 2.6 3.1 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span></div><div class="stat-value">128</div><div class="stat-foot"><span class="up">+6</span> נוספו החודש</div></article>
         </section>
@@ -572,11 +574,11 @@
         <div class="dashboard-grid">
           <div class="column">
             <section class="panel" id="calendarPreview">
-              <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>היום ביומן</h2><div class="panel-subtitle" id="calendarDate">תוכנית היום שלך</div></div></div><a href="#calendarPage" class="text-link" data-nav="calendar">לכל היומן ←</a></div>
+              <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/></svg></span><div><h2>ביקורי הגינות היום</h2><div class="panel-subtitle" id="calendarDate">תוכנית העבודה של הצוות</div></div></div><a href="#visitsPage" class="text-link" data-nav="visits">לכל הביקורים ←</a></div>
               <div class="event-list" data-search-group>
-                <div class="event" data-search="ישיבת צוות תכנון שבועי"><div class="event-time">09:30</div><span class="event-dot"></span><div><div class="event-title">ישיבת צוות</div><div class="event-meta">תכנון שבועי · חדר ישיבות</div></div><span class="event-tag">צוות</span></div>
-                <div class="event" data-search="שיחה עם דנה לוי לקוחה"><div class="event-time">11:00</div><span class="event-dot"></span><div><div class="event-title">שיחה עם דנה לוי</div><div class="event-meta">מעקב הצעת מחיר</div></div><span class="event-tag">לקוחה</span></div>
-                <div class="event" data-search="קבלת אספקה ספק מחסן"><div class="event-time">13:30</div><span class="event-dot"></span><div><div class="event-title">קבלת אספקה</div><div class="event-meta">בדיקת מלאי והזמנה</div></div><span class="event-tag">תפעול</span></div>
+                <div class="event" data-search="טיפול ואחזקה גינת השרון"><div class="event-time">08:00</div><span class="event-dot"></span><div><div class="event-title">טיפול ואחזקה — גינת השרון</div><div class="event-meta">גיזום, ניקוי ובדיקת השקיה · רמת השרון</div></div><span class="event-tag">ביקור</span></div>
+                <div class="event" data-search="גיזום בית הדקל"><div class="event-time">09:30</div><span class="event-dot"></span><div><div class="event-title">גיזום עונתי — בית הדקל</div><div class="event-meta">גיזום שיחים ופינוי גזם · הרצליה</div></div><span class="event-tag">ביקור</span></div>
+                <div class="event" data-search="בדיקת השקיה גינת הדרים"><div class="event-time">11:00</div><span class="event-dot"></span><div><div class="event-title">בדיקת השקיה — גינת הדרים</div><div class="event-meta">בדיקת טפטפות וניקוי ערוגות · תל אביב</div></div><span class="event-tag">ביקור</span></div>
                 <div class="empty-hint" data-empty>לא נמצאו אירועים מתאימים.</div>
               </div>
             </section>
@@ -584,10 +586,10 @@
             <section class="panel" id="tasks">
               <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon teal"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h2>המשימות שלי</h2><div class="panel-subtitle"><span id="taskProgress">4 משימות פתוחות</span> · עודכן עכשיו</div></div></div><a href="#tasks" class="text-link" data-coming="רשימת המשימות">לכל המשימות ←</a></div>
               <div class="task-list" id="taskList" data-search-group>
-                <label class="task-row" data-search="לשלוח הצעת מחיר לדנה לוי לקוחה"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לשלוח הצעת מחיר לדנה לוי</span><span class="task-meta"><span class="priority high"></span> דחוף · היום</span></span><span class="task-owner peach">מ</span></label>
-                <label class="task-row" data-search="לעבור על הזמנת הספקים"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לעבור על הזמנת הספקים</span><span class="task-meta"><span class="priority"></span> רגיל · היום</span></span><span class="task-owner mint">א</span></label>
-                <label class="task-row" data-search="לעדכן את מחירון החורף"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לעדכן את מחירון החורף</span><span class="task-meta"><span class="priority"></span> רגיל · מחר</span></span><span class="task-owner">מ</span></label>
-                <label class="task-row" data-search="לחזור ליוסי כהן לגבי הפגישה"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לחזור ליוסי כהן לגבי הפגישה</span><span class="task-meta"><span class="priority"></span> רגיל · יום ראשון</span></span><span class="task-owner peach">י</span></label>
+                <label class="task-row" data-search="לבדוק מערכת השקיה גינת השרון"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לבדוק מערכת השקיה בגינת השרון</span><span class="task-meta"><span class="priority high"></span> דחוף · בביקור הבוקר</span></span><span class="task-owner peach">נ</span></label>
+                <label class="task-row" data-search="לפנות גזם בית הדקל"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">לפנות גזם מבית הדקל</span><span class="task-meta"><span class="priority"></span> רגיל · היום</span></span><span class="task-owner mint">ש</span></label>
+                <label class="task-row" data-search="להשלים דישון גינת הדרים"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">להשלים דישון בגינת הדרים</span><span class="task-meta"><span class="priority"></span> רגיל · היום</span></span><span class="task-owner">נ</span></label>
+                <label class="task-row" data-search="להכין ציוד כיסוח וגיזום"><input class="task-check" type="checkbox"><span class="task-copy"><span class="task-name">להכין ציוד לכיסוח ולגיזום</span><span class="task-meta"><span class="priority"></span> לפני יציאה למסלול</span></span><span class="task-owner peach">ש</span></label>
                 <div class="empty-hint" data-empty>לא נמצאו משימות מתאימות.</div>
               </div>
             </section>
@@ -597,8 +599,8 @@
             <section class="panel" id="reminders">
               <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon orange"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><h2>תזכורות קרובות</h2><div class="panel-subtitle">כדי ששום דבר לא יתפספס</div></div></div><a href="#reminders" class="text-link" data-coming="התזכורות">הכל ←</a></div>
               <div class="reminder-list" data-search-group>
-                <div class="reminder" data-search="לשלוח מסמך לרואה חשבון"><div class="reminder-time">11:45</div><div class="reminder-copy"><strong>לשלוח מסמך לרואה החשבון</strong><span>תזכורת אישית · היום</span></div><span class="reminder-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
-                <div class="reminder" data-search="להתקשר לספק החשמל"><div class="reminder-time">15:00</div><div class="reminder-copy"><strong>להתקשר לספק החשמל</strong><span>תזכורת צוותית · היום</span></div><span class="reminder-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
+                <div class="reminder" data-search="להביא דשן לגינת הדרים"><div class="reminder-time">11:00</div><div class="reminder-copy"><strong>להביא דשן לגינת הדרים</strong><span>ציוד לביקור · היום</span></div><span class="reminder-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
+                <div class="reminder" data-search="לבדוק מפוח ומספרי גיזום"><div class="reminder-time">07:30</div><div class="reminder-copy"><strong>לבדוק מפוח ומספרי גיזום</strong><span>לפני יציאה למסלול · היום</span></div><span class="reminder-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span></div>
                 <div class="empty-hint" data-empty>לא נמצאו תזכורות מתאימות.</div>
               </div>
             </section>
@@ -606,9 +608,9 @@
             <section class="panel" id="shopping">
               <div class="panel-heading"><div class="panel-title-wrap"><span class="heading-icon teal"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8.5h14l-1.2 11H6.2L5 8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><h2>רשימת קניות</h2><div class="panel-subtitle">3 פריטים ממתינים</div></div></div><a href="#shopping" class="text-link" data-coming="רשימת הקניות">לרשימה ←</a></div>
               <div class="shopping-list" data-search-group>
-                <label class="shopping-row" data-search="נייר למדפסת"><input class="shopping-check" type="checkbox"><span class="shopping-name">נייר למדפסת</span><span class="shopping-qty">2 חבילות</span></label>
-                <label class="shopping-row" data-search="קפה למשרד"><input class="shopping-check" type="checkbox"><span class="shopping-name">קפה למשרד</span><span class="shopping-qty">1 יח׳</span></label>
-                <label class="shopping-row" data-search="סבון ידיים"><input class="shopping-check" type="checkbox"><span class="shopping-name">סבון ידיים</span><span class="shopping-qty">3 יח׳</span></label>
+                <label class="shopping-row" data-search="דשן עונתי"><input class="shopping-check" type="checkbox"><span class="shopping-name">דשן עונתי</span><span class="shopping-qty">2 שקיות</span></label>
+                <label class="shopping-row" data-search="טפטפות השקיה"><input class="shopping-check" type="checkbox"><span class="shopping-name">טפטפות השקיה</span><span class="shopping-qty">חבילה</span></label>
+                <label class="shopping-row" data-search="כפפות עבודה"><input class="shopping-check" type="checkbox"><span class="shopping-name">כפפות עבודה</span><span class="shopping-qty">3 זוגות</span></label>
                 <div class="empty-hint" data-empty>לא נמצאו פריטים מתאימים.</div>
               </div>
             </section>
@@ -628,6 +630,9 @@
       <section class="page-content" id="calendarPage" hidden>
         <div id="calendar-root"></div>
       </section>
+      <section class="page-content visits-page" id="visitsPage" hidden>
+        <div id="visits-root"></div>
+      </section>
       <section class="page-content settings-page" id="settingsPage" hidden>
         <div class="welcome-row"><div><p class="eyebrow">התאמה אישית</p><h1>הגדרות</h1><p class="welcome-subtitle">התאם את סביבת העבודה להעדפה שלך.</p></div></div>
         <section class="panel settings-card"><div class="panel-heading"><div><h2>מראה</h2><div class="panel-subtitle">ההעדפה נשמרת במכשיר הזה.</div></div></div>
@@ -639,7 +644,8 @@
 
     <nav class="mobile-bottom-nav" aria-label="ניווט מהיר">
       <a href="#home" class="mobile-nav-link active" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>ראשי</a>
-      <a href="#calendarPage" class="mobile-nav-link" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן</a>
+      <a href="#visitsPage" class="mobile-nav-link" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/></svg>גינות</a>
+      <a href="#calendarPage" class="mobile-nav-link" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>קווים</a>
       <a href="#tasks" class="mobile-nav-link" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות</a>
       <a href="#customers" class="mobile-nav-link" data-nav="customers"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 20c.5-3.3 2.5-5 6.2-5s5.7 1.7 6.2 5m2.5-6c2 .8 3 2.6 3.1 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>לקוחות</a>
     </nav>
@@ -775,14 +781,18 @@
     document.querySelectorAll('[data-nav]').forEach(link => link.addEventListener('click', event => {
       event.preventDefault();
       const key = link.dataset.nav;
+      const routeHash = key === 'visits' ? '#visitsPage' : key === 'calendar' ? '#calendarPage' : key === 'home' ? '#home' : `#${key}`;
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}${routeHash}`);
       document.querySelectorAll('[data-nav]').forEach(item => item.classList.toggle('active', item.dataset.nav === key));
       closeMenu();
       const showCalendar = key === 'calendar';
+      const showVisits = key === 'visits';
       const showSettings = key === 'settings';
-      document.getElementById('dashboardPage').hidden = showCalendar || showSettings;
+      document.getElementById('dashboardPage').hidden = showCalendar || showVisits || showSettings;
       document.getElementById('calendarPage').hidden = !showCalendar;
+      document.getElementById('visitsPage').hidden = !showVisits;
       document.getElementById('settingsPage').hidden = !showSettings;
-      if (!showCalendar && key !== 'home' && document.getElementById(key)) {
+      if (!showCalendar && !showVisits && key !== 'home' && document.getElementById(key)) {
         setTimeout(() => document.getElementById(key).scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
       }
     }));
@@ -791,6 +801,14 @@
       document.getElementById('dashboardPage').hidden = true;
       document.getElementById('calendarPage').hidden = false;
       document.getElementById('settingsPage').hidden = true;
+      document.getElementById('visitsPage').hidden = true;
+    }
+    if (window.location.hash === '#visitsPage') {
+      document.querySelectorAll('[data-nav]').forEach(item => item.classList.toggle('active', item.dataset.nav === 'visits'));
+      document.getElementById('dashboardPage').hidden = true;
+      document.getElementById('calendarPage').hidden = true;
+      document.getElementById('settingsPage').hidden = true;
+      document.getElementById('visitsPage').hidden = false;
     }
     document.querySelectorAll('[data-coming]').forEach(link => link.addEventListener('click', event => {
       event.preventDefault();
@@ -800,5 +818,6 @@
     refreshTaskCount();
   </script>
   <script type="module" src="./calendar.js"></script>
+  <script type="module" src="./visits.js"></script>
 </body>
 </html>

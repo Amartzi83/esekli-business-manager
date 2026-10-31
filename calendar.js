@@ -9,10 +9,10 @@ const demoMembers = [
   { id: "u-business-partner", name: "שותף לעסק", initials: "ש", color: "blue", role: "member" }
 ];
 const demoTasks = [
-  { id: "task-1", title: "לעבור על הזמנת הספקים", organizationId: "org-demo" },
-  { id: "task-2", title: "לשלוח הצעת מחיר לדנה לוי", organizationId: "org-demo" },
-  { id: "task-3", title: "לעדכן את מחירון החורף", organizationId: "org-demo" },
-  { id: "task-4", title: "לחזור ליוסי כהן לגבי הפגישה", organizationId: "org-demo" }
+  { id: "task-1", title: "בדיקת השקיה בגינת השרון", organizationId: "org-demo" },
+  { id: "task-2", title: "פינוי גזם מבית הדקל", organizationId: "org-demo" },
+  { id: "task-3", title: "השלמת דישון בגינת הדרים", organizationId: "org-demo" },
+  { id: "task-4", title: "הכנת ציוד לכיסוח ולגיזום", organizationId: "org-demo" }
 ];
 
 function escapeHtml(value) {
@@ -61,12 +61,14 @@ function makeDemoApi(organization, members, currentUser) {
     return date.toISOString();
   }
   let events = [
-    { id: "event-1", organizationId: organization.id, title: "ישיבת צוות", startAt: at(0, "09:30"), endAt: at(0, "10:30"), allDay: false, location: "חדר ישיבות", description: "תכנון שבועי ומעבר על משימות פתוחות.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-1", reminderMinutes: 15, createdById: "u-nahorai" },
-    { id: "event-2", organizationId: organization.id, title: "שיחה עם דנה לוי", startAt: at(0, "11:00"), endAt: at(0, "11:45"), allDay: false, location: "שיחת טלפון", description: "מעקב הצעת מחיר.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-2", reminderMinutes: 30, createdById: "u-business-partner" },
-    { id: "event-3", organizationId: organization.id, title: "קבלת אספקה", startAt: at(0, "13:30"), endAt: at(0, "14:15"), allDay: false, location: "מחסן", description: "בדיקת מלאי והזמנה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: null, createdById: "u-nahorai" },
-    { id: "event-4", organizationId: organization.id, title: "הכנת הצעת מחיר", startAt: at(1, "15:00"), endAt: at(1, "16:00"), allDay: false, location: "", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-3", reminderMinutes: 60, createdById: "u-nahorai" },
-    { id: "event-5", organizationId: organization.id, title: "יום צילום מוצרים", startAt: at(2, "00:00"), endAt: at(3, "00:00"), allDay: true, location: "סטודיו", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 1440, createdById: "u-business-partner" },
-    { id: "event-6", organizationId: organization.id, title: "פגישת תיאום", startAt: at(3, "10:00"), endAt: at(3, "11:00"), allDay: false, location: "חדר ישיבות", description: "", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 15, createdById: "u-nahorai" }
+    { id: "event-1", organizationId: organization.id, title: "טיפול ואחזקה — גינת השרון", startAt: at(0, "08:00"), endAt: at(0, "09:15"), allDay: false, location: "רמת השרון", description: "גיזום שיחים, ניקוי ערוגות ובדיקת מערכת ההשקיה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-1", reminderMinutes: 15, createdById: "u-nahorai" },
+    { id: "event-2", organizationId: organization.id, title: "גיזום עונתי — בית הדקל", startAt: at(0, "09:30"), endAt: at(0, "10:30"), allDay: false, location: "הרצליה", description: "גיזום שיחים ופינוי גזם.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-2", reminderMinutes: 15, createdById: "u-business-partner" },
+    { id: "event-3", organizationId: organization.id, title: "בדיקת השקיה — גינת הדרים", startAt: at(0, "11:00"), endAt: at(0, "11:50"), allDay: false, location: "תל אביב", description: "בדיקת טפטפות, לחץ מים וניקוי ערוגות.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-3", reminderMinutes: 15, createdById: "u-nahorai" },
+    { id: "event-4", organizationId: organization.id, title: "ניקיון ותחזוקה — חצר משפחת רז", startAt: at(0, "12:30"), endAt: at(0, "13:15"), allDay: false, location: "רעננה", description: "כיסוח, ניכוש עשבים וניקוי שבילים.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 15, createdById: "u-nahorai" },
+    { id: "event-5", organizationId: organization.id, title: "טיפול ואחזקה — גינת משפחת כהן", startAt: at(0, "14:00"), endAt: at(0, "15:00"), allDay: false, location: "כפר סבא", description: "כיסוח דשא, גיזום ובדיקת השקיה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 15, createdById: "u-business-partner" },
+    { id: "event-6", organizationId: organization.id, title: "אחזקה שוטפת — חברת אזורים", startAt: at(0, "15:30"), endAt: at(0, "16:45"), allDay: false, location: "פתח תקווה", description: "אחזקה, ניקיון ופינוי עלים וגזם.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-4", reminderMinutes: 15, createdById: "u-nahorai" },
+    { id: "event-7", organizationId: organization.id, title: "טיפול שבועי — גינת הדרים", startAt: at(1, "08:30"), endAt: at(1, "09:30"), allDay: false, location: "תל אביב", description: "טיפול קבוע בגינה ובדיקת ההשקיה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 30, createdById: "u-nahorai" },
+    { id: "event-8", organizationId: organization.id, title: "גיזום ושתילה — בית הדקל", startAt: at(2, "09:00"), endAt: at(2, "10:30"), allDay: false, location: "הרצליה", description: "גיזום עונתי והשלמת צמחייה בערוגה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 30, createdById: "u-business-partner" }
   ];
   const taskMap = demoTasks.map((task) => Object.assign({}, task, { organizationId: organization.id }));
   function mayEdit(record) {
