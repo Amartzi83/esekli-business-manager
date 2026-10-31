@@ -117,7 +117,7 @@ class WorkCalendar {
     this.members = context.members;
     this.api = context.api;
     this.date = startOfDay(new Date());
-    this.view = matchMedia("(max-width: 760px)").matches ? "day" : "week";
+    this.view = matchMedia("(max-width: 760px)").matches ? "list" : "week";
     this.events = [];
     this.tasks = [];
     this.filterId = "";
@@ -180,7 +180,7 @@ class WorkCalendar {
 
   title() {
     if (this.view === "month") return new Intl.DateTimeFormat("he-IL", { month: "long", year: "numeric" }).format(this.date);
-    if (this.view === "day") return formatDay(this.date);
+    if (this.view === "day" || this.view === "list") return formatDay(this.date);
     const start = startOfWeek(this.date);
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
@@ -190,12 +190,16 @@ class WorkCalendar {
   }
 
   render() {
-    const todayCount = this.visibleEvents(new Date()).length;
+    const todayEvents = this.visibleEvents(new Date());
+    const todayCount = todayEvents.length;
+    const linkedCount = todayEvents.filter((item) => item.taskId).length;
+    const plannedMinutes = todayEvents.filter((item) => !item.allDay).reduce((total, item) => total + Math.max(0, (new Date(item.endAt) - new Date(item.startAt)) / 60000), 0);
+    const plannedHours = Math.round(plannedMinutes / 6) / 10;
     const nextEvent = this.events.find((item) => (!this.filterId || (item.participantIds || []).includes(this.filterId)) && new Date(item.endAt) >= new Date());
     const chosen = this.members.find((item) => item.id === this.filterId);
-    this.root.innerHTML = '<div class="cal-app"><div class="cal-heading"><div><div class="cal-eyebrow">תכנון ושיתוף פעולה</div><h1>יומן העבודה</h1><p>כל מה שקורה בצוות, בתמונה אחת.</p></div><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>' +
-      '<div class="cal-summary"><div class="cal-summary-card"><span class="cal-summary-icon teal">▦</span><span><small>אירועים היום</small><b>' + todayCount + '</b></span><em>ביומן הצוות</em></div><div class="cal-summary-card"><span class="cal-summary-icon blue">◷</span><span><small>האירוע הבא</small><b>' + (nextEvent ? escapeHtml(nextEvent.title) : "אין אירועים קרובים") + '</b><small>' + (nextEvent ? escapeHtml(formatDay(new Date(nextEvent.startAt)) + " · " + formatTime(nextEvent.startAt)) : "אפשר להוסיף אירוע") + '</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon orange">♧</span><span><small>חברי הצוות</small><b>' + this.members.length + ' משתמשים</b></span><div class="cal-avatars">' + this.members.slice(0, 4).map((member) => '<i class="' + escapeHtml(member.color) + '" title="' + escapeHtml(member.name) + '">' + escapeHtml(member.initials) + '</i>').join("") + '</div></div></div>' +
-      '<section class="cal-panel"><div class="cal-toolbar"><div class="cal-date-controls"><button type="button" data-action="previous" aria-label="הקודם">›</button><button type="button" data-action="next" aria-label="הבא">‹</button><button class="cal-today" type="button" data-action="today">היום</button><h2>' + escapeHtml(this.title()) + '</h2></div><div class="cal-tools"><div class="cal-view-tabs" role="tablist" aria-label="תצוגת יומן">' + this.viewButton("day", "יום") + this.viewButton("week", "שבוע") + this.viewButton("month", "חודש") + '</div><div class="cal-filter-wrap"><button class="cal-filter" type="button" data-action="filter" aria-expanded="' + this.filterOpen + '">♧ ' + escapeHtml(chosen ? chosen.name : "כל הצוות") + '⌄</button>' + (this.filterOpen ? '<div class="cal-filter-menu"><button type="button" data-action="filter-member" data-member="">כל הצוות</button>' + this.members.map((member) => '<button type="button" data-action="filter-member" data-member="' + escapeHtml(member.id) + '"><i class="' + escapeHtml(member.color) + '">' + escapeHtml(member.initials) + '</i>' + escapeHtml(member.name) + '</button>').join("") + '</div>' : "") + '</div></div></div>' +
+    this.root.innerHTML = '<div class="cal-app"><div class="cal-heading"><div class="cal-heading-title"><span class="cal-app-mark" aria-hidden="true">▦</span><div><div class="cal-eyebrow">ניהול העסק · צוות</div><h1>יומן העבודה</h1><p>היום שלך מתוכנן במקום אחד.</p></div></div><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>' +
+      '<div class="cal-summary"><div class="cal-summary-card"><span class="cal-summary-icon teal">▦</span><span><small>אירועים היום</small><b>' + todayCount + '</b><small>ביומן הצוות</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon blue">✓</span><span><small>משימות מקושרות</small><b>' + linkedCount + '</b><small>מתוך האירועים היום</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon orange">◷</span><span><small>זמן מתוכנן</small><b>' + plannedHours + ' שעות</b><small>לאירועים היום</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon team">♧</span><span><small>חברי הצוות</small><b>' + this.members.length + ' אנשים</b></span><div class="cal-avatars">' + this.members.slice(0, 4).map((member) => '<i class="' + escapeHtml(member.color) + '" title="' + escapeHtml(member.name) + '">' + escapeHtml(member.initials) + '</i>').join("") + '</div></div></div>' +
+      '<section class="cal-panel"><div class="cal-toolbar"><div class="cal-date-controls"><button type="button" data-action="previous" aria-label="הקודם">›</button><button type="button" data-action="next" aria-label="הבא">‹</button><button class="cal-today" type="button" data-action="today">היום</button><h2>' + escapeHtml(this.title()) + '</h2></div><div class="cal-tools"><div class="cal-view-tabs" role="tablist" aria-label="תצוגת יומן">' + this.viewButton("list", "רשימה") + this.viewButton("day", "יום") + this.viewButton("week", "שבוע") + this.viewButton("month", "חודש") + '</div><div class="cal-filter-wrap"><button class="cal-filter" type="button" data-action="filter" aria-expanded="' + this.filterOpen + '">♧ ' + escapeHtml(chosen ? chosen.name : "כל הצוות") + '⌄</button>' + (this.filterOpen ? '<div class="cal-filter-menu"><button type="button" data-action="filter-member" data-member="">כל הצוות</button>' + this.members.map((member) => '<button type="button" data-action="filter-member" data-member="' + escapeHtml(member.id) + '"><i class="' + escapeHtml(member.color) + '">' + escapeHtml(member.initials) + '</i>' + escapeHtml(member.name) + '</button>').join("") + '</div>' : "") + '</div></div></div>' +
       (this.error ? '<div class="cal-error">' + escapeHtml(this.error) + ' <button type="button" data-action="retry">ניסיון נוסף</button></div>' : this.loading ? '<div class="cal-loading">טוען את היומן…</div>' : this.renderView()) +
       '<div class="cal-legend"><span><i class="plain"></i>אירוע</span><span><i class="linked"></i>אירוע עם משימה מקושרת</span><small>לחיצה על שעה פנויה תיצור אירוע</small></div></section>' +
       '<p class="cal-demo-note">נתוני הדגמה זמניים · החיבור לשמירה ולשיתוף ארגוני יתווסף בשלב התשתית המשותפת</p>' +
@@ -207,6 +211,7 @@ class WorkCalendar {
   }
 
   renderView() {
+    if (this.view === "list") return this.renderList();
     if (this.view === "month") return this.renderMonth();
     if (this.view === "day") return this.renderDay();
     return this.renderWeek();
@@ -218,6 +223,17 @@ class WorkCalendar {
 
   eventButton(item, compact) {
     return '<button type="button" class="cal-event ' + this.eventClass(item) + (compact ? " compact" : "") + '" data-action="open-event" data-id="' + escapeHtml(item.id) + '"><i></i><span><b>' + escapeHtml(item.title) + '</b>' + (!compact ? '<small>' + (item.allDay ? "כל היום" : formatTime(item.startAt)) + '</small>' : "") + '</span></button>';
+  }
+
+  renderList() {
+    const items = this.visibleEvents(this.date).slice().sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+    if (!items.length) return '<div class="cal-list-empty"><span>▦</span><b>אין אירועים מתוכננים ליום הזה</b><small>אפשר להוסיף אירוע ולשתף אותו עם הצוות.</small><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>';
+    const rows = items.map((item) => {
+      const participantCount = (item.participantIds || []).length;
+      const meta = [item.location, participantCount ? participantCount + (participantCount === 1 ? " איש צוות" : " אנשי צוות") : "ללא משתתפים"].filter(Boolean).join(" · ");
+      return '<div class="cal-list-row"><span class="cal-list-time">' + (item.allDay ? "כל היום" : formatTime(item.startAt)) + (item.allDay ? "" : '<small>' + formatTime(item.endAt) + '</small>') + '</span><span class="cal-list-marker ' + this.eventClass(item) + '"></span><button type="button" class="cal-list-card ' + this.eventClass(item) + '" data-action="open-event" data-id="' + escapeHtml(item.id) + '"><span class="cal-list-card-head"><b>' + escapeHtml(item.title) + '</b><span class="cal-list-tag">' + (item.taskId ? "משימה מקושרת" : "אירוע צוותי") + '</span></span><span class="cal-list-meta">' + escapeHtml(meta || "פרטי האירוע") + '</span><span class="cal-list-arrow" aria-hidden="true">‹</span></button></div>';
+    }).join("");
+    return '<div class="cal-list-view"><div class="cal-list-caption"><b>תוכנית היום</b><span>' + items.length + (items.length === 1 ? " אירוע" : " אירועים") + '</span></div><div class="cal-list-rows">' + rows + '</div><button class="cal-list-add" type="button" data-action="new-event"><span>＋</span> הוספת אירוע ליום</button></div>';
   }
 
   renderMonth() {

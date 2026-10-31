@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f7fb">
+  <meta name="theme-color" content="#0c1211">
   <meta name="description" content="לוח עבודה יומי לניהול העסק והצוות במקום אחד">
   <title>עסקלי — ניהול העסק</title>
   <script>
-    try { if (localStorage.getItem('esekli-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (_) {}
+    try {
+      const savedTheme = localStorage.getItem('esekli-theme');
+      if (savedTheme !== 'light') document.documentElement.dataset.theme = 'dark';
+    } catch (_) { document.documentElement.dataset.theme = 'dark'; }
   </script>
   <link rel="stylesheet" href="./calendar.css">
   <style>
@@ -21,8 +24,8 @@
       --navy: #14263d;
       --blue: #4776e6;
       --blue-soft: #edf3ff;
-      --teal: #13998c;
-      --teal-soft: #eaf8f5;
+      --teal: #14bd65;
+      --teal-soft: #e8f8ee;
       --orange: #e89b46;
       --orange-soft: #fff5e9;
       --red: #d86868;
@@ -64,7 +67,7 @@
       height: 40px;
       border-radius: 13px;
       color: #fff;
-      background: linear-gradient(145deg, #55b8ab, #278c83);
+      background: linear-gradient(145deg, #31e176, #12b95f);
       box-shadow: 0 6px 18px rgba(19, 153, 140, .28);
     }
     .brand-mark svg { width: 23px; height: 23px; }
@@ -84,7 +87,7 @@
       transition: background .18s, color .18s;
     }
     .nav-link:hover { background: rgba(255,255,255,.07); color: #fff; }
-    .nav-link.active { color: #fff; background: rgba(71,118,230,.24); box-shadow: inset -3px 0 #67a7ff; }
+    .nav-link.active { color: #fff; background: rgba(34,211,112,.16); box-shadow: inset -3px 0 #28dc74; }
     .nav-link svg { width: 18px; height: 18px; opacity: .9; }
     .nav-badge { margin-inline-start: auto; min-width: 21px; padding: 3px 6px; border-radius: 7px; text-align: center; background: rgba(255,255,255,.1); color: #dbe7f6; font-size: 10px; }
     .sidebar-spacer { flex: 1; }
@@ -313,20 +316,23 @@
 
     html[data-theme="dark"] {
       color-scheme: dark;
-      --ink: #e5edf6; --muted: #9baabd; --line: #2c394b; --canvas: #0e1724; --paper: #172334; --navy: #0a1422;
-      --blue: #82aaff; --blue-soft: #1d2c49; --teal: #45c4b2; --teal-soft: #163a38; --orange: #f4b96f; --orange-soft: #3b2c1b;
-      --red: #f28b8b; --red-soft: #3d252a; --shadow: 0 10px 34px rgba(0,0,0,.22);
+      --ink: #e9f1ec; --muted: #9aaba2; --line: #2b3a34; --canvas: #0b1210; --paper: #141d1a; --navy: #101815;
+      --blue: #4fc7b8; --blue-soft: #173632; --teal: #27d96e; --teal-soft: #153729; --orange: #f2bd59; --orange-soft: #382d19;
+      --red: #f07878; --red-soft: #3a2222; --shadow: 0 10px 34px rgba(0,0,0,.28);
     }
     html[data-theme="dark"] body { background: var(--canvas); color: var(--ink); }
-    html[data-theme="dark"] .topbar { background: rgba(23,35,52,.9); border-color: var(--line); }
+    html[data-theme="dark"] .topbar { background: rgba(20,29,26,.94); border-color: var(--line); }
+    html[data-theme="dark"] .sidebar { background: #101815; }
+    html[data-theme="dark"] .brand-mark { background: linear-gradient(145deg, #31e176, #12b95f); color: #062110; }
+    html[data-theme="dark"] .nav-link.active { background: rgba(39,217,110,.14); box-shadow: inset -3px 0 #27d96e; }
     html[data-theme="dark"] .mobile-brand, html[data-theme="dark"] h1, html[data-theme="dark"] .panel-heading h2,
     html[data-theme="dark"] .event-title, html[data-theme="dark"] .task-name, html[data-theme="dark"] .reminder-copy strong,
     html[data-theme="dark"] .client-copy strong { color: var(--ink); }
-    html[data-theme="dark"] .icon-button, html[data-theme="dark"] .field-input, html[data-theme="dark"] .secondary-button { background: #1a293c; color: #d8e2ee; border-color: var(--line); }
-    html[data-theme="dark"] .search-box, html[data-theme="dark"] .search-box.expanded { background: #142033; border-color: var(--line); color: #a9b6c7; }
+    html[data-theme="dark"] .icon-button, html[data-theme="dark"] .field-input, html[data-theme="dark"] .secondary-button { background: #1a2621; color: #dce8df; border-color: var(--line); }
+    html[data-theme="dark"] .search-box, html[data-theme="dark"] .search-box.expanded { background: #141e1a; border-color: var(--line); color: #a9b6ad; }
     html[data-theme="dark"] .search-box input { color: var(--ink); }
     html[data-theme="dark"] .search-box input::placeholder, html[data-theme="dark"] .search-box.expanded input::placeholder { color: #8f9db0; }
-    html[data-theme="dark"] .top-avatar { color: #f3d6a6; background: #463823; }
+    html[data-theme="dark"] .top-avatar { color: #d9f5e1; background: #1d3d2a; }
     html[data-theme="dark"] .notice-dot { border-color: var(--paper); }
     html[data-theme="dark"] .prototype-note, html[data-theme="dark"] .stat-card, html[data-theme="dark"] .panel,
     html[data-theme="dark"] #taskDialog, html[data-theme="dark"] .settings-card { background: var(--paper); border-color: var(--line); color: var(--ink); }
@@ -336,20 +342,21 @@
     html[data-theme="dark"] .empty-hint, html[data-theme="dark"] .field-label { color: #9baabd; }
     html[data-theme="dark"] .event, html[data-theme="dark"] .task-row, html[data-theme="dark"] .shopping-row { border-color: #2b394c; }
     html[data-theme="dark"] .event-time, html[data-theme="dark"] .shopping-name { color: #bcc8d7; }
-    html[data-theme="dark"] .event-tag { color: #b9cbef; background: #22324c; }
+    html[data-theme="dark"] .event-tag { color: #a7f0bd; background: #1b3d29; }
     html[data-theme="dark"] .task-check, html[data-theme="dark"] .shopping-check { background: #172334; border-color: #526176; }
-    html[data-theme="dark"] .task-owner { color: #c0d0df; background: #2b3b4d; }
+    html[data-theme="dark"] .task-owner { color: #c0d9ca; background: #293b31; }
     html[data-theme="dark"] .task-owner.peach { color: #f0c4a4; background: #3e2e27; }
     html[data-theme="dark"] .task-owner.mint { color: #a6e1d4; background: #1c3d39; }
-    html[data-theme="dark"] .reminder { background: #1b293b; }
+    html[data-theme="dark"] .reminder { background: #1a2621; }
     html[data-theme="dark"] .client-avatar { color: #c5d8e6; background: #293b4b; }
     html[data-theme="dark"] .client-avatar.lilac { color: #d1c5f1; background: #322d47; }
     html[data-theme="dark"] .client-avatar.sand { color: #e8c797; background: #3c3326; }
     html[data-theme="dark"] .toast { background: #21463f; color: #e3f6f0; border-color: #35645b; }
-    html[data-theme="dark"] .close-button { background: #253449; color: #d1dce8; }
-    html[data-theme="dark"] .mobile-bottom-nav { background: rgba(18,29,44,.96); border-color: var(--line); }
-    html[data-theme="dark"] .mobile-nav-link { color: #9baabd; }
-    html[data-theme="dark"] .cal-app { --cal-line: #2c394b; --cal-muted: #9baabd; --cal-green: #45c4b2; --cal-soft: #163a38; }
+    html[data-theme="dark"] .close-button { background: #26332d; color: #d1dce8; }
+    html[data-theme="dark"] .mobile-bottom-nav { background: rgba(16,24,21,.97); border-color: var(--line); }
+    html[data-theme="dark"] .mobile-nav-link { color: #9aaba2; }
+    html[data-theme="dark"] .mobile-nav-link.active { color: #2ddd77; }
+    html[data-theme="dark"] .cal-app { --cal-line: #2b3a34; --cal-muted: #9aaba2; --cal-green: #27d96e; --cal-soft: #153729; }
     html[data-theme="dark"] #calendarPage .cal-summary-card, html[data-theme="dark"] #calendarPage .cal-panel,
     html[data-theme="dark"] #calendarPage .cal-filter-menu, html[data-theme="dark"] #calendarPage .cal-dialog { background: var(--paper); border-color: var(--line); color: var(--ink); }
     html[data-theme="dark"] #calendarPage .cal-summary-card b, html[data-theme="dark"] #calendarPage .cal-date-controls h2,
@@ -364,21 +371,21 @@
     html[data-theme="dark"] #calendarPage .cal-view-tabs button.selected, html[data-theme="dark"] #calendarPage .cal-dialog-head>button,
     html[data-theme="dark"] #calendarPage .cal-secondary, html[data-theme="dark"] #calendarPage .cal-editor input:not([type=checkbox]),
     html[data-theme="dark"] #calendarPage .cal-editor select, html[data-theme="dark"] #calendarPage .cal-editor textarea {
-      background: #1a293c; border-color: #35465c; color: #d8e2ee;
+      background: #1a2621; border-color: #35473d; color: #dce8df;
     }
-    html[data-theme="dark"] #calendarPage .cal-view-tabs { background: #111d2c; }
-    html[data-theme="dark"] #calendarPage .cal-week-column { background: #172334; }
+    html[data-theme="dark"] #calendarPage .cal-view-tabs { background: #101815; }
+    html[data-theme="dark"] #calendarPage .cal-week-column { background: #141d1a; }
     html[data-theme="dark"] #calendarPage .cal-hour-slot { border-color: #2b394c; }
     html[data-theme="dark"] #calendarPage .cal-hour-slot:hover, html[data-theme="dark"] #calendarPage .cal-day-row>div>button:first-child:hover,
     html[data-theme="dark"] #calendarPage .cal-month-cell:hover { background: #1e3044; }
-    html[data-theme="dark"] #calendarPage .cal-week-event, html[data-theme="dark"] #calendarPage .cal-event { background: #173b37; color: #a8e7d8; border-color: #398777; }
-    html[data-theme="dark"] #calendarPage .cal-week-event.linked, html[data-theme="dark"] #calendarPage .cal-event.linked { background: #1f3150; color: #b6cbff; border-color: #597bb8; }
+    html[data-theme="dark"] #calendarPage .cal-week-event, html[data-theme="dark"] #calendarPage .cal-event { background: #183c28; color: #a8efbb; border-color: #398858; }
+    html[data-theme="dark"] #calendarPage .cal-week-event.linked, html[data-theme="dark"] #calendarPage .cal-event.linked { background: #173a34; color: #a9e9dd; border-color: #39887d; }
     html[data-theme="dark"] #calendarPage .cal-dialog-head small, html[data-theme="dark"] #calendarPage .cal-detail-list b,
     html[data-theme="dark"] #calendarPage .cal-detail-list span, html[data-theme="dark"] #calendarPage .cal-editor form>label,
     html[data-theme="dark"] #calendarPage .cal-editor form .cal-form-row>label, html[data-theme="dark"] #calendarPage .cal-editor legend,
     html[data-theme="dark"] #calendarPage .cal-member-list label { color: #aab8c9; }
     html[data-theme="dark"] #calendarPage .cal-dialog-actions, html[data-theme="dark"] #calendarPage .cal-editor fieldset { border-color: var(--line); }
-    html[data-theme="dark"] #calendarPage .cal-member-list label { background: #1a293c; border-color: #35465c; }
+    html[data-theme="dark"] #calendarPage .cal-member-list label { background: #1a2621; border-color: #35473d; }
     html[data-theme="dark"] #calendarPage .teal { background: #1c403b; color: #a6e5d4; }
     html[data-theme="dark"] #calendarPage .blue { background: #223653; color: #b8ccf1; }
     html[data-theme="dark"] #calendarPage .peach { background: #432f27; color: #e9c1a5; }
@@ -396,6 +403,117 @@
     .setting-switch[aria-checked="true"] span { transform: translateX(-20px); }
     html[data-theme="dark"] .setting-switch:not([aria-checked="true"]) { background: #44536a; }
     html[data-theme="dark"] .setting-switch span { background: #e8eef5; }
+    /* Compact mobile calendar style based on the supplied reference. */
+    #calendarPage .cal-heading { align-items: center; margin-bottom: 16px; padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+    #calendarPage .cal-heading-title { display: flex; align-items: center; gap: 11px; }
+    #calendarPage .cal-app-mark { width: 39px; height: 39px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--teal-soft); color: var(--teal); font-size: 20px; }
+    #calendarPage .cal-eyebrow { margin: 0 0 3px; font-size: 9px; letter-spacing: .2px; }
+    #calendarPage .cal-heading h1 { font-size: 21px; }
+    #calendarPage .cal-heading p { margin-top: 3px; font-size: 10px; }
+    #calendarPage .cal-primary { min-height: 39px; border-radius: 10px; background: linear-gradient(130deg,#31df77,#16bd62); box-shadow: 0 5px 16px rgba(22,189,98,.2); }
+    #calendarPage .cal-primary:hover { background: #10ad57; }
+    #calendarPage .cal-summary { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; margin-bottom: 12px; }
+    #calendarPage .cal-summary-card, #calendarPage .cal-summary-card:last-child { display: flex; min-height: 76px; padding: 10px; border-radius: 11px; box-shadow: none; }
+    #calendarPage .cal-summary-icon { width: 29px; height: 29px; border-radius: 9px; }
+    #calendarPage .cal-summary-icon.team { background: #eef3f0; color: #72847a; }
+    #calendarPage .cal-summary-card>span:nth-child(2) { gap: 3px; }
+    #calendarPage .cal-summary-card small { font-size: 8px; }
+    #calendarPage .cal-summary-card b { font-size: 13px; }
+    #calendarPage .cal-avatars i { border-color: var(--paper); }
+    #calendarPage .cal-panel { border-radius: 13px; box-shadow: none; }
+    #calendarPage .cal-toolbar { min-height: auto; padding: 11px 13px; }
+    #calendarPage .cal-date-controls>button { width: 31px; height: 31px; border-radius: 9px; font-size: 18px; }
+    #calendarPage .cal-date-controls .cal-today { width: auto; padding: 0 10px; }
+    #calendarPage .cal-date-controls h2 { font-size: 12px; }
+    #calendarPage .cal-view-tabs { padding: 3px; border-radius: 9px; }
+    #calendarPage .cal-view-tabs button { min-width: 43px; border-radius: 7px; padding: 6px 9px; font-size: 9px; }
+    #calendarPage .cal-view-tabs button.selected { background: var(--teal); color: #fff; box-shadow: none; }
+    #calendarPage .cal-filter { min-height: 31px; border-radius: 9px; font-size: 9px; }
+    #calendarPage .cal-list-view { padding: 12px 13px 13px; }
+    #calendarPage .cal-list-caption { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 6px; color: var(--ink); font-size: 10px; }
+    #calendarPage .cal-list-caption span { color: var(--muted); font-size: 9px; }
+    #calendarPage .cal-list-row { display: grid; grid-template-columns: 48px 12px minmax(0,1fr); gap: 8px; min-height: 68px; direction: ltr; }
+    #calendarPage .cal-list-time { padding-top: 11px; color: var(--ink); font-size: 9px; font-weight: 700; text-align: left; }
+    #calendarPage .cal-list-time small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; font-weight: 500; }
+    #calendarPage .cal-list-marker { width: 8px; height: 8px; margin-top: 15px; border: 2px solid #28d875; border-radius: 50%; background: var(--paper); box-shadow: 0 0 0 3px var(--teal-soft); }
+    #calendarPage .cal-list-marker.linked { border-color: #45c8b8; box-shadow: 0 0 0 3px #e8f7f4; }
+    #calendarPage .cal-list-card { position: relative; min-width: 0; min-height: 59px; margin: 3px 0 6px; padding: 9px 11px; border: 1px solid var(--line); border-right: 3px solid #24cf6e; border-radius: 10px; background: var(--paper); color: var(--ink); text-align: right; direction: rtl; font: inherit; }
+    #calendarPage .cal-list-card.linked { border-right-color: #35bcae; }
+    #calendarPage .cal-list-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-left: 14px; }
+    #calendarPage .cal-list-card-head>b { min-width: 0; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    #calendarPage .cal-list-tag { flex: none; padding: 3px 6px; border-radius: 20px; background: var(--teal-soft); color: #188348; font-size: 7px; }
+    #calendarPage .cal-list-card.linked .cal-list-tag { background: #e8f7f4; color: #258c80; }
+    #calendarPage .cal-list-meta { display: block; overflow: hidden; margin-top: 6px; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    #calendarPage .cal-list-arrow { position: absolute; top: 50%; left: 7px; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+    #calendarPage .cal-list-add { width: 100%; min-height: 38px; margin-top: 7px; border: 1px dashed var(--line); border-radius: 9px; background: transparent; color: var(--teal); font-size: 9px; font-weight: 700; }
+    #calendarPage .cal-list-add span { margin-inline-end: 4px; font-size: 14px; }
+    #calendarPage .cal-list-empty { min-height: 230px; padding: 26px 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; text-align: center; }
+    #calendarPage .cal-list-empty>span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--teal-soft); color: var(--teal); font-size: 19px; }
+    #calendarPage .cal-list-empty b { font-size: 11px; }
+    #calendarPage .cal-list-empty small { margin-bottom: 6px; color: var(--muted); font-size: 9px; }
+    html[data-theme="dark"] .cal-app-mark { background: #173728; }
+    html[data-theme="dark"] #calendarPage .cal-summary-icon.team { background: #26332d; color: #a5b7ab; }
+    html[data-theme="dark"] #calendarPage .cal-view-tabs button.selected { background: #25d66e; color: #071b0e; }
+    html[data-theme="dark"] #calendarPage .cal-list-card { background: #151e1b; border-color: #2b3a34; border-right-color: #28d875; color: var(--ink); }
+    html[data-theme="dark"] #calendarPage .cal-list-card.linked { border-right-color: #45c8b8; }
+    html[data-theme="dark"] #calendarPage .cal-list-tag { background: #193e29; color: #a9f0be; }
+    html[data-theme="dark"] #calendarPage .cal-list-card.linked .cal-list-tag { background: #173b35; color: #a9e9dd; }
+    html[data-theme="dark"] #calendarPage .cal-list-marker.linked { box-shadow: 0 0 0 3px #173b35; }
+    html[data-theme="dark"] #calendarPage .cal-list-add { border-color: #35473d; }
+    html[data-theme="dark"] #calendarPage .cal-date-controls>button, html[data-theme="dark"] #calendarPage .cal-filter,
+    html[data-theme="dark"] #calendarPage .cal-view-tabs button.selected { background: #1a2621; border-color: #35473d; color: #dce8df; }
+    html[data-theme="dark"] #calendarPage .cal-view-tabs button.selected { background: #25d66e; color: #071b0e; border-color: #25d66e; }
+    html[data-theme="dark"] #calendarPage .cal-toolbar, html[data-theme="dark"] #calendarPage .cal-week-head,
+    html[data-theme="dark"] #calendarPage .cal-week-day, html[data-theme="dark"] #calendarPage .cal-week-column,
+    html[data-theme="dark"] #calendarPage .cal-day-row>div, html[data-theme="dark"] #calendarPage .cal-day-title,
+    html[data-theme="dark"] #calendarPage .cal-month-cell, html[data-theme="dark"] #calendarPage .cal-all-day,
+    html[data-theme="dark"] #calendarPage .cal-legend { border-color: #2b3a34; }
+    html[data-theme="dark"] #calendarPage .cal-list-card { border-color: #2b3a34; }
+    html[data-theme="dark"] #calendarPage .cal-day-row>div>button:first-child:hover, html[data-theme="dark"] #calendarPage .cal-hour-slot:hover,
+    html[data-theme="dark"] #calendarPage .cal-month-cell:hover { background: #192720; }
+    html[data-theme="dark"] #calendarPage .teal { background: #183b2a; color: #a8efbb; }
+    html[data-theme="dark"] #calendarPage .blue { background: #173a34; color: #a9e9dd; }
+    html[data-theme="dark"] .mobile-nav-link.active { background: #173323; border-radius: 10px; }
+    html[data-theme="dark"] .topbar { box-shadow: 0 5px 18px rgba(0,0,0,.14); }
+    @media (max-width: 900px) {
+      #calendarPage .cal-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      #calendarPage .cal-summary-card:last-child { display: flex; }
+    }
+    @media (max-width: 760px) {
+      #calendarPage.page-content { padding-top: 15px; }
+      #calendarPage .cal-heading { margin-bottom: 11px; padding-bottom: 10px; }
+      #calendarPage .cal-heading h1 { font-size: 18px; }
+      #calendarPage .cal-heading p { font-size: 9px; }
+      #calendarPage .cal-app-mark { width: 35px; height: 35px; border-radius: 10px; }
+      #calendarPage .cal-primary { min-height: 35px; padding: 0 9px; font-size: 9px; }
+      #calendarPage .cal-summary { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; margin-bottom: 9px; }
+      #calendarPage .cal-summary-card, #calendarPage .cal-summary-card:last-child { min-height: 58px; padding: 7px; gap: 6px; border-radius: 10px; }
+      #calendarPage .cal-summary-card:nth-child(2) { grid-column: auto; grid-row: auto; }
+      #calendarPage .cal-summary-icon { width: 25px; height: 25px; border-radius: 8px; font-size: 12px; }
+      #calendarPage .cal-summary-card small { font-size: 7px; }
+      #calendarPage .cal-summary-card b { font-size: 11px; }
+      #calendarPage .cal-avatars i { width: 20px; height: 20px; font-size: 7px; }
+      #calendarPage .cal-toolbar { gap: 9px; padding: 9px; }
+      #calendarPage .cal-date-controls { width: 100%; justify-content: space-between; gap: 5px; }
+      #calendarPage .cal-date-controls h2 { flex: 1; margin: 0 2px; font-size: 10px; text-align: center; }
+      #calendarPage .cal-date-controls>button { width: 29px; height: 29px; }
+      #calendarPage .cal-date-controls .cal-today { width: auto; padding: 0 8px; font-size: 9px; }
+      #calendarPage .cal-tools { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 7px; width: 100%; }
+      #calendarPage .cal-view-tabs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); min-width: 0; }
+      #calendarPage .cal-view-tabs button { min-width: 0; padding: 6px 3px; font-size: 8px; }
+      #calendarPage .cal-filter { max-width: 112px; overflow: hidden; padding: 0 7px; text-overflow: ellipsis; white-space: nowrap; }
+      #calendarPage .cal-list-view { padding: 9px 9px 10px; }
+      #calendarPage .cal-list-row { grid-template-columns: 40px 10px minmax(0,1fr); gap: 6px; min-height: 63px; }
+      #calendarPage .cal-list-time { padding-top: 10px; font-size: 8px; }
+      #calendarPage .cal-list-marker { width: 7px; height: 7px; margin-top: 13px; }
+      #calendarPage .cal-list-card { min-height: 55px; padding: 8px; }
+      #calendarPage .cal-list-card-head { gap: 4px; padding-left: 11px; }
+      #calendarPage .cal-list-card-head>b { font-size: 9px; }
+      #calendarPage .cal-list-tag { padding: 3px 5px; font-size: 6px; }
+      #calendarPage .cal-list-meta { font-size: 7px; }
+      #calendarPage .cal-legend { gap: 9px; padding: 0 8px; font-size: 7px; }
+      #calendarPage .cal-legend small { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -548,7 +666,7 @@
       document.documentElement.dataset.theme = theme;
       if (!isDark) delete document.documentElement.dataset.theme;
       if (save) { try { localStorage.setItem('esekli-theme', theme); } catch (_) {} }
-      if (themeMeta) themeMeta.content = isDark ? '#0e1724' : '#f5f7fb';
+      if (themeMeta) themeMeta.content = isDark ? '#0b1210' : '#f5f7fb';
       if (themeToggle) {
         themeToggle.setAttribute('aria-label', isDark ? 'הפעלת מצב בהיר' : 'הפעלת מצב כהה');
         themeToggle.title = isDark ? 'הפעלת מצב בהיר' : 'הפעלת מצב כהה';
