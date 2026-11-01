@@ -9,7 +9,10 @@ const assetRoutes = new Map([
   ['/calendar.js', { file: './calendar.js', type: 'text/javascript; charset=utf-8' }],
   ['/calendar.css', { file: './calendar.css', type: 'text/css; charset=utf-8' }],
   ['/visits.js', { file: './visits.js', type: 'text/javascript; charset=utf-8' }],
-  ['/visits.css', { file: './visits.css', type: 'text/css; charset=utf-8' }]
+  ['/visits.css', { file: './visits.css', type: 'text/css; charset=utf-8' }],
+  ['/tasks.js', { file: './tasks.js', type: 'text/javascript; charset=utf-8' }],
+  ['/tasks.css', { file: './tasks.css', type: 'text/css; charset=utf-8' }],
+  ['/mz-empire-logo.jpg', { file: './mz-empire-logo.jpg', type: 'image/jpeg' }]
 ]);
 
 const server = createServer(async (request, response) => {
