@@ -15,6 +15,10 @@ const assetRoutes = new Map([
   ['/store.js', { file: './store.js', type: 'text/javascript; charset=utf-8' }],
   ['/history.js', { file: './history.js', type: 'text/javascript; charset=utf-8' }],
   ['/history.css', { file: './history.css', type: 'text/css; charset=utf-8' }],
+  ['/shopping.js', { file: './shopping.js', type: 'text/javascript; charset=utf-8' }],
+  ['/reminders.js', { file: './reminders.js', type: 'text/javascript; charset=utf-8' }],
+  ['/customers.js', { file: './customers.js', type: 'text/javascript; charset=utf-8' }],
+  ['/lists.css', { file: './lists.css', type: 'text/css; charset=utf-8' }],
   ['/mz-empire-logo.jpg', { file: './mz-empire-logo.jpg', type: 'image/jpeg' }]
 ]);
 

@@ -25,6 +25,15 @@ const COLLECTIONS = [
   { id:'calendar', key:'esekli-calendar-v1', label:'יומן', kind:'list',
     title:event => event.title || 'אירוע',
     meta:event => [dateTimeLabel(event.startAt), event.location] },
+  { id:'shopping', key:'esekli-shopping-v1', label:'רשימת קניות', kind:'list',
+    title:item => item.name || 'פריט',
+    meta:item => [item.bought ? 'נקנה' : 'לקנות', item.qty, item.supplier, item.price ? `₪${item.price}` : '', item.visit && `ביקור: ${item.visit}`] },
+  { id:'reminders', key:'esekli-reminders-v1', label:'תזכורות', kind:'list',
+    title:item => item.title || 'תזכורת',
+    meta:item => [item.done ? 'בוצעה' : 'פעילה', `${dateLabel(item.date)} ${item.time || ''}`.trim(), item.repeat && item.repeat !== 'none' && 'חוזרת', item.client] },
+  { id:'customers', key:'esekli-customers-v1', label:'תיקי לקוחות', kind:'list',
+    title:customer => customer.name || 'לקוח',
+    meta:customer => [({ active:'פעיל', lead:'ליד', paused:'מושהה' })[customer.status], customer.contact, customer.phone, customer.plan, customer.price ? `₪${customer.price} לחודש` : '', Array.isArray(customer.log) && `${customer.log.length} רשומות ביומן`] },
   { id:'workday', key:'esekli-workday-v1', label:'צוות ורכב', kind:'object',
     title:() => 'צוות ורכב',
     meta:day => [day.team, Array.isArray(day.members) && day.members.map(member => member.name).join(', '), day.vehicle && `${day.vehicle.model} · ${day.vehicle.plate}`] },
@@ -37,7 +46,9 @@ const FIELD_LABELS = {
   name:'שם', client:'לקוח', service:'שירות', address:'כתובת', date:'תאריך', time:'שעה', duration:'משך', team:'צוות', phone:'טלפון',
   status:'סטטוס', tasks:'משימות הביקור', issues:'תקלות', startedAt:'התחלה', finishedAt:'סיום', photo:'תמונה', samplePhotos:'תמונות',
   startAt:'התחלה', endAt:'סיום', allDay:'כל היום', location:'מיקום', description:'תיאור', participantIds:'משתתפים', taskId:'משימה מקושרת',
-  reminderMinutes:'תזכורת', members:'אנשי צוות', vehicle:'רכב'
+  reminderMinutes:'תזכורת', members:'אנשי צוות', vehicle:'רכב',
+  qty:'כמות', category:'קטגוריה', supplier:'ספק', price:'מחיר', bought:'נקנה', boughtAt:'זמן קנייה', repeat:'חזרה', doneAt:'זמן ביצוע',
+  type:'סוג', contact:'איש קשר', email:'אימייל', plan:'חבילת שירות', sites:'גינות', since:'לקוח מאז', log:'יומן פעילות'
 };
 const byKey = Object.fromEntries(COLLECTIONS.map(collection => [collection.key, collection]));
 
