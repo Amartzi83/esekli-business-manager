@@ -12,6 +12,9 @@ const assetRoutes = new Map([
   ['/visits.css', { file: './visits.css', type: 'text/css; charset=utf-8' }],
   ['/tasks.js', { file: './tasks.js', type: 'text/javascript; charset=utf-8' }],
   ['/tasks.css', { file: './tasks.css', type: 'text/css; charset=utf-8' }],
+  ['/store.js', { file: './store.js', type: 'text/javascript; charset=utf-8' }],
+  ['/history.js', { file: './history.js', type: 'text/javascript; charset=utf-8' }],
+  ['/history.css', { file: './history.css', type: 'text/css; charset=utf-8' }],
   ['/mz-empire-logo.jpg', { file: './mz-empire-logo.jpg', type: 'image/jpeg' }]
 ]);
 
@@ -29,6 +32,9 @@ const server = createServer(async (request, response) => {
   if (pathname === '/' || pathname === '/index.html') {
     content = page;
     contentType = 'text/html; charset=utf-8';
+  } else if (/^\/images\/garden-[1-8]\.jpg$/.test(pathname)) {
+    content = await readFile(fileURLToPath(new URL(`.${pathname}`, import.meta.url)));
+    contentType = 'image/jpeg';
   } else if (assetRoutes.has(pathname)) {
     const asset = assetRoutes.get(pathname);
     content = await readFile(fileURLToPath(new URL(asset.file, import.meta.url)));

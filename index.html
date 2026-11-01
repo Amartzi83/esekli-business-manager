@@ -14,8 +14,9 @@
     } catch (_) { document.documentElement.dataset.theme = 'dark'; }
   </script>
   <link rel="stylesheet" href="./calendar.css">
-  <link rel="stylesheet" href="./visits.css?v=713331d">
+  <link rel="stylesheet" href="./visits.css?v=wl1">
   <link rel="stylesheet" href="./tasks.css">
+  <link rel="stylesheet" href="./history.css">
   <style>
     :root {
       color-scheme: light;
@@ -568,8 +569,8 @@
       <div class="side-label">סביבת עבודה</div>
       <nav class="nav-list">
         <a class="nav-link active" href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>דף הבית</a>
-        <a class="nav-link" href="#visitsPage" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 7.2c.8-1.4 2-2 3.3-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>ביקורי גינות</a>
-        <a class="nav-link" href="#calendarPage" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>קווי עבודה</a>
+        <a class="nav-link" href="#visitsPage" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/><path d="M8.8 7.2c.8-1.4 2-2 3.3-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>קווי עבודה</a>
+        <a class="nav-link" href="#calendarPage" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M8 13h3m2 0h3m-8 4h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>יומן</a>
         <a class="nav-link" href="#tasksPage" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות<span class="nav-badge" id="navTaskCount">4</span></a>
         <a class="nav-link" href="#shopping" data-nav="shopping"><svg viewBox="0 0 24 24" fill="none"><path d="M5 8.5h14l-1.2 11H6.2L5 8.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 9V6a3 3 0 0 1 6 0v3M9 13.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>רשימת קניות</a>
         <a class="nav-link" href="#reminders" data-nav="reminders"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-2.5 7-2.5 8.5h17C20.5 16 18 16 18 9ZM10 21h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>תזכורות<span class="nav-badge">2</span></a>
@@ -577,6 +578,7 @@
       </nav>
       <div class="sidebar-spacer"></div>
       <div class="side-label">החשבון שלי</div>
+      <a class="nav-link" href="#historyPage" data-nav="history"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 0 2.4-5.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 4.5v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.3l2.8 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>היסטוריה וגיבויים</a>
       <a class="nav-link" href="#settings" data-nav="settings"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3H3.8a1.8 1.8 0 1 1 0-3.6H4a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 1 1 3.6 0V2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 1 1 0 3.6H20a1.8 1.8 0 0 0-.6 3Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" transform="translate(1 1) scale(.92)"/></svg>הגדרות</a>
       <div class="team-card"><div class="team-avatar">עב</div><div class="team-copy"><strong>העסק שלי</strong><span>סביבת צוות</span></div></div>
     </aside>
@@ -602,7 +604,7 @@
           <button class="primary-button" id="addTaskButton"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>הוספת משימה</button>
         </section>
 
-        <div class="prototype-note"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>תצוגת אבטיפוס — הנתונים להמחשה. שיתוף בין משתמשים, שמירה וגיבוי יתחברו בשלב הבא.</span></div>
+        <div class="prototype-note"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span>הנתונים נשמרים במכשיר הזה עם היסטוריית שינויים וגיבוי אוטומטי (בתפריט: היסטוריה וגיבויים). שיתוף בין משתמשים יתחבר בשלב הבא.</span></div>
 
         <section class="stats-grid" aria-label="סיכום היום">
           <article class="stat-card"><div class="stat-top"><span class="stat-label">משימות פתוחות</span><span class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2M4.2 17.5l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="stat-value" id="openTaskCount">4</div><div class="stat-foot"><span class="up" id="todayTaskCount">2 להיום</span> · כדאי להתחיל בזמן</div></article>
@@ -677,16 +679,22 @@
         <section class="panel settings-card"><div class="panel-heading"><div><h2>מראה</h2><div class="panel-subtitle">ההעדפה נשמרת במכשיר הזה.</div></div></div>
           <div class="setting-row"><div class="setting-copy"><strong>מצב כהה</strong><small>ממשק כהה נוח לעבודה בתאורה חלשה.</small></div><button class="setting-switch" id="themeToggleSettings" type="button" role="switch" aria-label="מצב כהה" aria-checked="false"><span></span></button></div>
         </section>
+        <section class="panel settings-card"><div class="panel-heading"><div><h2>גיבוי ושחזור</h2><div class="panel-subtitle">כל שינוי נשמר עם שעה, וגיבוי אוטומטי נוצר כל שעה.</div></div></div>
+          <div class="setting-row"><div class="setting-copy"><strong>היסטוריה וגיבויים</strong><small>שליפת מידע מכל נקודת זמן, שחזור, והורדת קובץ גיבוי.</small></div><a class="secondary-button" href="#historyPage" data-nav="history">פתיחה</a></div>
+        </section>
+      </section>
+      <section class="page-content history-page" id="historyPage" hidden>
+        <div id="history-root"></div>
       </section>
       <footer style="padding:0 24px 22px;text-align:center;color:#a2acb8;font-size:9px">עסקלי · תצוגת אבטיפוס</footer>
     </main>
 
     <nav class="mobile-bottom-nav" aria-label="ניווט מהיר">
-      <a href="#home" class="mobile-nav-link active" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>ראשי</a>
-      <a href="#visitsPage" class="mobile-nav-link" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 13.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.7"/></svg>גינות</a>
-      <a href="#calendarPage" class="mobile-nav-link" data-nav="calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>קווים</a>
-      <a href="#tasksPage" class="mobile-nav-link" data-nav="tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.2 6.5l1.1 1.1 1.8-2M4.2 12l1.1 1.1 1.8-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>משימות</a>
-      <a href="#customers" class="mobile-nav-link" data-nav="customers"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 20c.5-3.3 2.5-5 6.2-5s5.7 1.7 6.2 5m2.5-6c2 .8 3 2.6 3.1 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>לקוחות</a>
+      <a href="#more" class="mobile-nav-link" data-open-menu><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>עוד</a>
+      <a href="#customers" class="mobile-nav-link" data-nav="customers"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 20c.5-3.3 2.5-5 6.2-5s5.7 1.7 6.2 5M16 5.2a3.5 3.5 0 0 1 0 6.7m2.1 2.5c2 .8 3 2.6 3.1 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>לקוחות</a>
+      <a href="#visitsPage" class="mobile-nav-link" data-nav="visits"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 3v4M16.5 3v4M3.5 9.5h17M7.5 13h2m3 0h2m3 0h0M7.5 16.5h2m3 0h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>קווי עבודה</a>
+      <a href="#visitsPage" class="mobile-nav-link" data-nav="gardens"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21v-8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 13C12 8 8.6 5.5 4 5.5c0 4.6 3 7.5 8 7.5ZM12 11.5c0-4.4 2.9-7 7.5-7 0 4.3-2.8 7-7.5 7Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>גינות</a>
+      <a href="#home" class="mobile-nav-link active" data-nav="home"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 10 8.5-6.5 8.5 6.5v9a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 19v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>בית</a>
     </nav>
   </div>
 
@@ -700,7 +708,7 @@
       const theme = isDark ? 'dark' : 'light';
       document.documentElement.dataset.theme = theme;
       if (!isDark) delete document.documentElement.dataset.theme;
-      if (save) { try { localStorage.setItem('esekli-theme', theme); } catch (_) {} }
+      if (save) { try { window.esekliStore ? window.esekliStore.write('esekli-theme', theme) : localStorage.setItem('esekli-theme', theme); } catch (_) {} }
       if (themeMeta) themeMeta.content = isDark ? '#0b1210' : '#f5f7fb';
       if (themeToggle) {
         themeToggle.setAttribute('aria-label', isDark ? 'הפעלת מצב בהיר' : 'הפעלת מצב כהה');
@@ -756,15 +764,19 @@
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     function closeMenu() { sidebar.classList.remove('open'); overlay.classList.remove('show'); }
-    document.getElementById('menuButton').addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
+    function openMenu() { sidebar.classList.add('open'); overlay.classList.add('show'); }
+    window.openAppMenu = openMenu;
+    document.getElementById('menuButton').addEventListener('click', openMenu);
+    document.querySelectorAll('[data-open-menu]').forEach(link => link.addEventListener('click', event => { event.preventDefault(); openMenu(); }));
     overlay.addEventListener('click', closeMenu);
 
-    const pages = { calendar: 'calendarPage', visits: 'visitsPage', tasks: 'tasksPage', settings: 'settingsPage' };
+    const pages = { calendar: 'calendarPage', visits: 'visitsPage', gardens: 'visitsPage', tasks: 'tasksPage', settings: 'settingsPage', history: 'historyPage' };
     function showPage(key) {
       const pageId = pages[key];
       document.querySelectorAll('[data-nav]').forEach(item => item.classList.toggle('active', item.dataset.nav === key));
       document.getElementById('dashboardPage').hidden = Boolean(pageId);
       Object.values(pages).forEach(id => { document.getElementById(id).hidden = id !== pageId; });
+      document.body.classList.toggle('wl-active', pageId === 'visitsPage');
       return pageId;
     }
     document.querySelectorAll('[data-nav]').forEach(link => link.addEventListener('click', event => {
@@ -787,8 +799,10 @@
     }));
     document.getElementById('notificationButton').addEventListener('click', () => showToast('יש לך 2 תזכורות להיום.'));
   </script>
+  <script type="module" src="./store.js"></script>
   <script type="module" src="./calendar.js"></script>
   <script type="module" src="./visits.js"></script>
   <script type="module" src="./tasks.js"></script>
+  <script type="module" src="./history.js"></script>
 </body>
 </html>

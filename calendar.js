@@ -3,6 +3,7 @@ const FIRST_HOUR = 7;
 const LAST_HOUR = 21;
 const HOUR_HEIGHT = 56;
 
+const CALENDAR_KEY = "esekli-calendar-v1";
 const demoOrganization = { id: "org-demo", name: "העסק שלי", timeZone: "Asia/Jerusalem" };
 const demoMembers = [
   { id: "u-nahorai", name: "נהוראי מרציאנו", initials: "נ", color: "teal", role: "admin" },
@@ -60,7 +61,7 @@ function makeDemoApi(organization, members, currentUser) {
     date.setHours(parts[0], parts[1] || 0, 0, 0);
     return date.toISOString();
   }
-  let events = [
+  let events = loadEvents() || [
     { id: "event-1", organizationId: organization.id, title: "טיפול ואחזקה — גינת השרון", startAt: at(0, "08:00"), endAt: at(0, "09:15"), allDay: false, location: "רמת השרון", description: "גיזום שיחים, ניקוי ערוגות ובדיקת מערכת ההשקיה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-1", reminderMinutes: 15, createdById: "u-nahorai" },
     { id: "event-2", organizationId: organization.id, title: "גיזום עונתי — בית הדקל", startAt: at(0, "09:30"), endAt: at(0, "10:30"), allDay: false, location: "הרצליה", description: "גיזום שיחים ופינוי גזם.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-2", reminderMinutes: 15, createdById: "u-business-partner" },
     { id: "event-3", organizationId: organization.id, title: "בדיקת השקיה — גינת הדרים", startAt: at(0, "11:00"), endAt: at(0, "11:50"), allDay: false, location: "תל אביב", description: "בדיקת טפטפות, לחץ מים וניקוי ערוגות.", participantIds: ["u-nahorai", "u-business-partner"], taskId: "task-3", reminderMinutes: 15, createdById: "u-nahorai" },
@@ -70,6 +71,18 @@ function makeDemoApi(organization, members, currentUser) {
     { id: "event-7", organizationId: organization.id, title: "טיפול שבועי — גינת הדרים", startAt: at(1, "08:30"), endAt: at(1, "09:30"), allDay: false, location: "תל אביב", description: "טיפול קבוע בגינה ובדיקת ההשקיה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 30, createdById: "u-nahorai" },
     { id: "event-8", organizationId: organization.id, title: "גיזום ושתילה — בית הדקל", startAt: at(2, "09:00"), endAt: at(2, "10:30"), allDay: false, location: "הרצליה", description: "גיזום עונתי והשלמת צמחייה בערוגה.", participantIds: ["u-nahorai", "u-business-partner"], taskId: null, reminderMinutes: 30, createdById: "u-business-partner" }
   ];
+  function loadEvents() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(CALENDAR_KEY) || "null");
+      return Array.isArray(stored) ? stored : null;
+    } catch (error) { return null; }
+  }
+  // Saved through the shared store so the calendar has history and backups like the other modules.
+  function saveEvents() {
+    if (window.esekliStore) window.esekliStore.write(CALENDAR_KEY, events);
+    else localStorage.setItem(CALENDAR_KEY, JSON.stringify(events));
+  }
+  saveEvents();
   const taskMap = demoTasks.map((task) => Object.assign({}, task, { organizationId: organization.id }));
   function mayEdit(record) {
     return currentUser.role === "admin" || record.createdById === currentUser.id;
@@ -91,6 +104,7 @@ function makeDemoApi(organization, members, currentUser) {
       if (payload.taskId && !taskMap.some((task) => task.id === payload.taskId)) throw new Error("המשימה לא נמצאה");
       const record = Object.assign({ id: "event-" + Math.random().toString(36).slice(2, 9) }, payload);
       events.push(record);
+      saveEvents();
       return Object.assign({}, record);
     },
     async updateEvent(payload) {
@@ -100,12 +114,14 @@ function makeDemoApi(organization, members, currentUser) {
       const record = Object.assign({}, events[index], payload);
       delete record.eventId;
       events[index] = record;
+      saveEvents();
       return Object.assign({}, record);
     },
     async deleteEvent(query) {
       const index = events.findIndex((item) => item.id === query.eventId && item.organizationId === organization.id);
       if (query.organizationId !== organization.id || index < 0 || !mayEdit(events[index])) throw new Error("אין הרשאה למחוק את האירוע");
       events.splice(index, 1);
+      saveEvents();
     }
   };
 }

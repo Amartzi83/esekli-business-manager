@@ -34,7 +34,9 @@ if (root) {
   let ownerFilter = 'all';
   let editingId = null;
 
-  const save = () => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); } catch { toast('אין מספיק מקום לשמירת המשימות במכשיר.'); } };
+  // Writes go through the shared store (history + backups) when it is loaded.
+  const persist = (key, value) => window.esekliStore ? window.esekliStore.write(key, value) : localStorage.setItem(key, JSON.stringify(value));
+  const save = () => { try { persist(STORAGE_KEY, tasks); } catch { toast('אין מספיק מקום לשמירת המשימות במכשיר.'); } };
   const toast = message => (window.showToast ? window.showToast(message) : console.info(message));
   const byId = id => tasks.find(task => task.id === id);
   const ownerOf = task => TEAM.find(member => member.id === task.owner);
