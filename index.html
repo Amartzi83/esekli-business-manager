@@ -13,10 +13,10 @@
       if (savedTheme !== 'light') document.documentElement.dataset.theme = 'dark';
     } catch (_) { document.documentElement.dataset.theme = 'dark'; }
   </script>
-  <link rel="stylesheet" href="./calendar.css">
-  <link rel="stylesheet" href="./visits.css?v=wl1">
-  <link rel="stylesheet" href="./tasks.css">
-  <link rel="stylesheet" href="./history.css">
+  <link rel="stylesheet" href="./calendar.css?v=2">
+  <link rel="stylesheet" href="./visits.css?v=2">
+  <link rel="stylesheet" href="./tasks.css?v=2">
+  <link rel="stylesheet" href="./history.css?v=2">
   <style>
     :root {
       color-scheme: light;
@@ -799,10 +799,10 @@
     }));
     document.getElementById('notificationButton').addEventListener('click', () => showToast('יש לך 2 תזכורות להיום.'));
   </script>
-  <script type="module" src="./store.js"></script>
-  <script type="module" src="./calendar.js"></script>
-  <script type="module" src="./visits.js"></script>
-  <script type="module" src="./tasks.js"></script>
-  <script type="module" src="./history.js"></script>
+  <script type="module" src="./store.js?v=2"></script>
+  <script type="module" src="./calendar.js?v=2"></script>
+  <script type="module" src="./visits.js?v=2"></script>
+  <script type="module" src="./tasks.js?v=2"></script>
+  <script type="module" src="./history.js?v=2"></script>
 </body>
 </html>
