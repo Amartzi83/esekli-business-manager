@@ -62,7 +62,8 @@ if (root && store) {
   function trashGrid() {
     if (!state.trash.length) return '<p class="h-muted">אין תמונות שנמחקו ב־30 הימים האחרונים.</p>';
     const visits = store.read('esekli-garden-visits-v2') || [];
-    return `<div class="h-trash">${state.trash.map(photo => `<figure><img src="${photo.data}" alt="תמונה שנמחקה"><figcaption>${safe(visits.find(visit => visit.id === photo.visitId)?.name || 'ביקור')}<small>נמחקה ${safe(ago(photo.deletedAt))}</small></figcaption><button type="button" class="v-button" data-action="restore-photo" data-id="${safe(photo.id)}">שחזור</button></figure>`).join('')}</div>`;
+    const customers = store.read('esekli-customers-v1') || [];
+    return `<div class="h-trash">${state.trash.map(photo => `<figure><img src="${photo.data}" alt="תמונה שנמחקה"><figcaption>${safe(visits.find(visit => visit.id === photo.visitId)?.name || customers.find(customer => `customer:${customer.id}` === photo.visitId)?.name || 'ביקור')}<small>נמחקה ${safe(ago(photo.deletedAt))}</small></figcaption><button type="button" class="v-button" data-action="restore-photo" data-id="${safe(photo.id)}">שחזור</button></figure>`).join('')}</div>`;
   }
 
   function render() {

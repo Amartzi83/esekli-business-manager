@@ -46,7 +46,7 @@ const FIELD_LABELS = {
   name:'שם', client:'לקוח', service:'שירות', address:'כתובת', date:'תאריך', time:'שעה', duration:'משך', team:'צוות', phone:'טלפון',
   status:'סטטוס', tasks:'משימות הביקור', issues:'תקלות', startedAt:'התחלה', finishedAt:'סיום', photo:'תמונה', samplePhotos:'תמונות',
   startAt:'התחלה', endAt:'סיום', allDay:'כל היום', location:'מיקום', description:'תיאור', participantIds:'משתתפים', taskId:'משימה מקושרת',
-  reminderMinutes:'תזכורת', members:'אנשי צוות', vehicle:'רכב',
+  reminderMinutes:'תזכורת', members:'אנשי צוות', vehicle:'רכב', image:'תמונה',
   qty:'כמות', category:'קטגוריה', supplier:'ספק', price:'מחיר', bought:'נקנה', boughtAt:'זמן קנייה', repeat:'חזרה', doneAt:'זמן ביצוע',
   type:'סוג', contact:'איש קשר', email:'אימייל', plan:'חבילת שירות', sites:'גינות', since:'לקוח מאז', log:'יומן פעילות'
 };
@@ -323,6 +323,13 @@ async function restorePhoto(id) {
   await run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').put(original));
   await run(historyDb(), 'photoTrash', 'readwrite', tx => tx.objectStore('photoTrash').delete(id));
 }
+const listPhotos = () => getAll(photoDb(), 'photos');
+const savePhoto = photo => run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').put(photo));
+// Moves a photo to the bin, so it can still be restored from the history screen.
+async function removePhoto(photo) {
+  await trashPhoto(photo);
+  await run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').delete(photo.id));
+}
 async function purgeTrash() {
   const old = (await listTrash()).filter(photo => Date.now() - photo.deletedAt > TRASH_DAYS * DAY);
   if (old.length) await run(historyDb(), 'photoTrash', 'readwrite', tx => old.forEach(photo => tx.objectStore('photoTrash').delete(photo.id)));
@@ -389,6 +396,6 @@ window.esekliStore = {
   COLLECTIONS, FIELD_LABELS, LAST_EXPORT_KEY, ready, write, read, parse:(key, raw) => parse(byKey[key], raw), collection:key => byKey[key],
   summaryText, listChanges, snapshotOf, stateAt, itemHistory, counts,
   createBackup:async (kind, note) => { await queue; return createBackup(kind, note); }, listBackups, restoreCollections, restoreItem,
-  trashPhoto, listTrash, restorePhoto, exportFile, readBackupFile, importBackup,
+  trashPhoto, listTrash, restorePhoto, listPhotos, savePhoto, removePhoto, exportFile, readBackupFile, importBackup,
   flush:() => queue
 };

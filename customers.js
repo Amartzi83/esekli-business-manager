@@ -71,7 +71,26 @@ if (root) {
       visitsMonth:customers.reduce((sum, customer) => sum + visitsOf(customer).filter(visit => (visit.date || '').startsWith(month)).length, 0)
     };
   }
-  const avatar = customer => `<span class="client-avatar x-avatar ${toneOf(customer)}">${safe(initials(customer.name))}</span>`;
+  const GALLERY = [1,2,3,4,5,6,7,8].map(number => `./images/garden-${number}.jpg`);
+  const photoOwner = customer => `customer:${customer.id}`;
+  let customerPhotos = new Map();
+  function imageUrl(customer) {
+    const image = customer.image;
+    if (image?.kind === 'gallery') return GALLERY[image.index % GALLERY.length];
+    return image?.kind === 'photo' ? customerPhotos.get(image.id) || null : null;
+  }
+  const avatar = customer => {
+    const url = imageUrl(customer);
+    return url ? `<img class="client-avatar x-avatar x-avatar-img" src="${safe(url)}" alt="">` : `<span class="client-avatar x-avatar ${toneOf(customer)}">${safe(initials(customer.name))}</span>`;
+  };
+  async function refreshPhotos() {
+    const ids = new Set(customers.filter(customer => customer.image?.kind === 'photo').map(customer => customer.image.id));
+    if (!ids.size || !window.esekliStore) return;
+    try {
+      customerPhotos = new Map((await window.esekliStore.listPhotos()).filter(photo => ids.has(photo.id)).map(photo => [photo.id, photo.data]));
+      render();
+    } catch {}
+  }
 
   function listScreen() {
     const count = counts();
@@ -93,6 +112,7 @@ if (root) {
         <div class="x-contact"><button type="button" class="v-button" data-action="call">📞 שיחה</button><button type="button" class="v-button" data-action="whatsapp">💬 וואטסאפ</button><button type="button" class="v-button" data-action="email">✉ אימייל</button><button type="button" class="v-button" data-action="navigate">📍 ניווט</button></div>
         <dl class="x-info">${info.map(([label, value, dir]) => `<div><dt>${label}</dt><dd ${dir ? `dir="${dir}"` : ''}>${safe(value || '—')}</dd></div>`).join('')}</dl>
         ${customer.notes ? `<p class="x-notes">${safe(customer.notes)}</p>` : ''}</section>
+      <section class="h-panel x-image-card">${imageUrl(customer) ? `<img src="${safe(imageUrl(customer))}" alt="התמונה שנבחרה">` : '<span class="x-image-empty" aria-hidden="true">🌿</span>'}<div><h2>תמונה בקווי העבודה</h2><p>${imageUrl(customer) ? `התמונה הזו מוצגת ב־${visits.length} ביקורים של הלקוח.` : 'לא נבחרה תמונה. כל ביקור מציג את התמונה שלו.'}${visits.length ? '' : ' עדיין אין ביקורים משויכים ללקוח.'}</p><button type="button" class="v-button primary" data-action="pick-image">שינוי תמונה</button></div></section>
       <div class="x-columns">
         <section class="h-panel"><div class="h-panel-head"><h2>ביקורי גינות</h2><small>${visits.length} ביקורים</small></div>${visits.length ? `<div class="x-visits">${visits.slice(0, 8).map(visit => `<div class="x-visit"><span>${safe(visit.date?.split('-').reverse().join('/'))} ${safe(visit.time || '')}</span><b>${safe(visit.name)}</b><span class="h-chip">${VISIT_STATUS[visit.status] || ''}</span></div>`).join('')}</div>` : '<p class="h-muted">אין ביקורים משויכים. ביקורים משויכים לפי שם הגינה או שם הלקוח בביקור.</p>'}</section>
         <section class="h-panel"><div class="h-panel-head"><h2>יומן פעילות</h2><small>${log.length} רשומות</small></div>
@@ -167,6 +187,88 @@ if (root) {
     toast(existing ? 'פרטי הלקוח עודכנו.' : 'התיק נפתח.');
   });
 
+  // Image picker: an upload, a photo from one of the customer's visits, or a garden photo.
+  const picker = document.createElement('dialog');
+  picker.className = 'v-dialog x-picker';
+  document.body.append(picker);
+  const sameImage = (a, b) => a?.kind === b?.kind && a?.id === b?.id && a?.index === b?.index;
+  const tile = (customer, image, url, label, removable = '') => `<span class="x-tile ${sameImage(customer.image, image) ? 'on' : ''}"><button type="button" data-pick='${safe(JSON.stringify(image))}' aria-label="${safe(label)}"><img src="${safe(url)}" alt=""></button>${removable}</span>`;
+  async function openPicker(customer) {
+    let photos = [];
+    try { photos = await window.esekliStore.listPhotos(); } catch { toast('אחסון התמונות אינו זמין בדפדפן הזה.'); }
+    const uploads = photos.filter(photo => photo.visitId === photoOwner(customer));
+    const visitIds = new Set(visitsOf(customer).map(visit => visit.id));
+    const fromVisits = photos.filter(photo => visitIds.has(photo.visitId));
+    const section = (title, content) => content ? `<h3>${title}</h3><div class="x-tiles">${content}</div>` : '';
+    picker.innerHTML = `<div class="h-viewer-body"><div class="h-viewer-head"><div><p class="v-eyebrow">${safe(customer.name)}</p><h2>בחירת תמונה לקווי העבודה</h2></div><button type="button" class="v-button" data-close>סגירה</button></div>
+      <div class="x-picker-actions"><label class="v-button primary">העלאת תמונה מהמכשיר<input type="file" accept="image/*" hidden data-image-upload></label><button type="button" class="v-button" data-pick="null" ${customer.image ? '' : 'disabled'}>ללא תמונה קבועה</button></div>
+      ${section('תמונות שהעלית', uploads.map(photo => tile(customer, { kind:'photo', id:photo.id }, photo.data, 'תמונה שהעלית', `<button type="button" class="x-tile-remove" data-remove="${safe(photo.id)}" aria-label="מחיקת התמונה">×</button>`)).join(''))}
+      ${section('תמונות מהביקורים', fromVisits.map(photo => tile(customer, { kind:'photo', id:photo.id }, photo.data, 'תמונה מביקור')).join(''))}
+      ${section('תמונות גינות', GALLERY.map((url, index) => tile(customer, { kind:'gallery', index }, url, `תמונת גינה ${index + 1}`)).join(''))}</div>`;
+    picker.dataset.customer = customer.id;
+    if (!picker.open) picker.showModal();
+  }
+  function applyImage(customer, image, message) {
+    if (image) customer.image = image; else delete customer.image;
+    save();
+    render();
+    document.dispatchEvent(new CustomEvent('esekli:customer-image'));
+    toast(message);
+  }
+  function resizeImage(file) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, 1400 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(image.src);
+        resolve(canvas.toDataURL('image/jpeg', .78));
+      };
+      image.onerror = reject;
+      image.src = URL.createObjectURL(file);
+    });
+  }
+  picker.addEventListener('click', async event => {
+    if (event.target === picker || event.target.closest('[data-close]')) { picker.close(); return; }
+    const customer = byId(picker.dataset.customer);
+    if (!customer) return;
+    const pick = event.target.closest('[data-pick]');
+    if (pick && !pick.disabled) {
+      const image = JSON.parse(pick.dataset.pick);
+      if (image?.kind === 'photo' && !customerPhotos.has(image.id)) {
+        const photo = (await window.esekliStore.listPhotos()).find(item => item.id === image.id);
+        if (photo) customerPhotos.set(photo.id, photo.data);
+      }
+      picker.close();
+      applyImage(customer, image, image ? 'התמונה עודכנה בקווי העבודה.' : 'התמונה הקבועה הוסרה.');
+      return;
+    }
+    const remove = event.target.closest('[data-remove]');
+    if (remove && window.confirm('למחוק את התמונה? אפשר לשחזר אותה 30 יום ממסך ההיסטוריה.')) {
+      const photo = (await window.esekliStore.listPhotos()).find(item => item.id === remove.dataset.remove);
+      if (photo) await window.esekliStore.removePhoto(photo);
+      if (customer.image?.id === remove.dataset.remove) applyImage(customer, null, 'התמונה נמחקה.');
+      await openPicker(customer);
+    }
+  });
+  picker.addEventListener('change', async event => {
+    if (!event.target.matches('[data-image-upload]')) return;
+    const customer = byId(picker.dataset.customer);
+    const file = event.target.files?.[0];
+    if (!customer || !file) return;
+    if (!file.type.startsWith('image/')) { toast('אפשר להעלות קובצי תמונה בלבד.'); return; }
+    try {
+      const photo = { id:newId('customer-photo'), visitId:photoOwner(customer), data:await resizeImage(file), createdAt:Date.now() };
+      await window.esekliStore.savePhoto(photo);
+      customerPhotos.set(photo.id, photo.data);
+      picker.close();
+      applyImage(customer, { kind:'photo', id:photo.id }, 'התמונה הועלתה ועודכנה בקווי העבודה.');
+    } catch { toast('לא ניתן לשמור את התמונה במכשיר.'); }
+  });
+
   const digits = phone => { const value = String(phone || '').replace(/\D/g,''); return value.startsWith('0') ? `972${value.slice(1)}` : value; };
   const openExternal = url => window.open(url, '_blank', 'noopener,noreferrer');
   root.addEventListener('click', event => {
@@ -180,6 +282,7 @@ if (root) {
     if (action === 'back') { state.selectedId = null; render(); }
     if (!customer) return;
     if (action === 'edit') openDialog(customer);
+    if (action === 'pick-image') openPicker(customer);
     if (action === 'call') customer.phone ? (window.location.href = `tel:+${digits(customer.phone)}`) : toast('לא הוגדר טלפון.');
     if (action === 'whatsapp') customer.phone ? openExternal(`https://wa.me/${digits(customer.phone)}`) : toast('לא הוגדר טלפון.');
     if (action === 'email') customer.email ? (window.location.href = `mailto:${customer.email}`) : toast('לא הוגדר אימייל.');
@@ -215,4 +318,5 @@ if (root) {
 
   save();
   render();
+  refreshPhotos();
 }

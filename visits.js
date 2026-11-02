@@ -3,6 +3,7 @@ if (root) {
   const STORAGE_KEY = 'esekli-garden-visits-v2';
   const LEGACY_KEY = 'esekli-garden-visits-v1';
   const DAY_KEY = 'esekli-workday-v1';
+  const CUSTOMERS_KEY = 'esekli-customers-v1';
   const PHOTOS = [1,2,3,4,5,6,7,8].map(n => `./images/garden-${n}.jpg`);
   const DEFAULT_TASKS = ['כיסוח דשא','גיזום שיחים וגדר חיה','ניקוי עלים וגזם','בדיקת מערכת השקיה','דישון','פינוי גזם'];
   const SERVICES = ['תחזוקה חודשית','תחזוקה שבועית','תחזוקה דו שבועית','גיזום עונתי','שתילה ודישון','בדיקת השקיה','ביקור חד פעמי'];
@@ -136,7 +137,27 @@ if (root) {
   const byId = id => visits.find(visit => visit.id === id);
   const byTime = (a,b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '');
   const dayVisits = (key = state.date) => visits.filter(visit => visit.date === key).sort(byTime);
-  const photoUrl = visit => PHOTOS[(Number(visit.photo) || 0) % PHOTOS.length];
+  // A customer can choose the image shown for their gardens (see customers.js).
+  let customersCache = [];
+  let customerPhotos = new Map();
+  function readCustomers() {
+    try { const stored = JSON.parse(localStorage.getItem(CUSTOMERS_KEY) || '[]'); return Array.isArray(stored) ? stored : []; } catch { return []; }
+  }
+  function customerImage(visit) {
+    const customer = customersCache.find(item => (item.sites || []).includes(visit.name)) || customersCache.find(item => item.name === visit.client);
+    const image = customer?.image;
+    if (image?.kind === 'gallery') return PHOTOS[image.index % PHOTOS.length];
+    return image?.kind === 'photo' ? customerPhotos.get(image.id) || null : null;
+  }
+  async function refreshCustomerImages() {
+    customersCache = readCustomers();
+    const ids = new Set(customersCache.filter(item => item.image?.kind === 'photo').map(item => item.image.id));
+    if (ids.size && window.esekliStore) {
+      try { customerPhotos = new Map((await window.esekliStore.listPhotos()).filter(photo => ids.has(photo.id)).map(photo => [photo.id, photo.data])); } catch {}
+    }
+    render();
+  }
+  const photoUrl = visit => customerImage(visit) || PHOTOS[(Number(visit.photo) || 0) % PHOTOS.length];
   const progressOf = visit => visit.tasks.length ? Math.round(visit.tasks.filter(task => task.done).length / visit.tasks.length * 100) : 0;
   const nextVisit = list => list.find(visit => visit.status === 'inProgress') || list.find(visit => visit.status === 'planned');
 
@@ -381,6 +402,7 @@ if (root) {
   }
 
   function render() {
+    customersCache = readCustomers();
     const visit = state.view === 'visit' && byId(state.visitId);
     if (state.view === 'visit' && !visit) state.view = 'lines';
     root.innerHTML = state.view === 'route' ? routeScreen() : visit ? visitScreen(visit) : linesScreen();
@@ -679,6 +701,9 @@ if (root) {
     render();
   });
 
+  document.addEventListener('esekli:customer-image', refreshCustomerImages);
+
   save();
   render();
+  refreshCustomerImages();
 }
