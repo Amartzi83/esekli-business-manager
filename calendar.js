@@ -1,3 +1,5 @@
+import { workAreas } from "./scheduler.js?v=11";
+
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
 const LAST_HOUR = 21;
@@ -151,7 +153,24 @@ class WorkCalendar {
     this.root.addEventListener("click", this.clickHandler);
     this.root.addEventListener("submit", this.submitHandler);
     this.root.addEventListener("change", this.changeHandler);
+    // Visits are edited on another screen, so the work areas are refreshed when the calendar opens.
+    document.addEventListener("click", (event) => { if (event.target.closest('[data-nav="calendar"]')) this.refresh(); });
     await this.refresh();
+  }
+
+  savedVisits() {
+    try {
+      const stored = JSON.parse(localStorage.getItem("esekli-garden-visits-v2") || "[]");
+      return Array.isArray(stored) ? stored : [];
+    } catch (error) { return []; }
+  }
+
+  areaLabel(date, className) {
+    const key = dateKey(date);
+    const areas = workAreas({ date:key, visits:this.savedVisits(), events:this.events });
+    if (!areas.length) return "";
+    const text = areas.join(" · ");
+    return '<span class="cal-area ' + className + '" title="' + escapeHtml("אזור עבודה: " + text) + '">' + escapeHtml(text) + '</span>';
   }
 
   range() {
@@ -245,13 +264,13 @@ class WorkCalendar {
 
   renderList() {
     const items = this.visibleEvents(this.date).slice().sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
-    if (!items.length) return '<div class="cal-list-empty"><span>▦</span><b>אין אירועים מתוכננים ליום הזה</b><small>אפשר להוסיף אירוע ולשתף אותו עם הצוות.</small><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>';
+    if (!items.length) return this.areaLabel(this.date, "cal-area-banner") + '<div class="cal-list-empty"><span>▦</span><b>אין אירועים מתוכננים ליום הזה</b><small>אפשר להוסיף אירוע ולשתף אותו עם הצוות.</small><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>';
     const rows = items.map((item) => {
       const participantCount = (item.participantIds || []).length;
       const meta = [item.location, participantCount ? participantCount + (participantCount === 1 ? " איש צוות" : " אנשי צוות") : "ללא משתתפים"].filter(Boolean).join(" · ");
       return '<div class="cal-list-row"><span class="cal-list-time">' + (item.allDay ? "כל היום" : formatTime(item.startAt)) + (item.allDay ? "" : '<small>' + formatTime(item.endAt) + '</small>') + '</span><span class="cal-list-marker ' + this.eventClass(item) + '"></span><button type="button" class="cal-list-card ' + this.eventClass(item) + '" data-action="open-event" data-id="' + escapeHtml(item.id) + '"><span class="cal-list-card-head"><b>' + escapeHtml(item.title) + '</b><span class="cal-list-tag">' + (item.taskId ? "משימה מקושרת" : "אירוע צוותי") + '</span></span><span class="cal-list-meta">' + escapeHtml(meta || "פרטי האירוע") + '</span><span class="cal-list-arrow" aria-hidden="true">‹</span></button></div>';
     }).join("");
-    return '<div class="cal-list-view"><div class="cal-list-caption"><b>תוכנית היום</b><span>' + items.length + (items.length === 1 ? " אירוע" : " אירועים") + '</span></div><div class="cal-list-rows">' + rows + '</div><button class="cal-list-add" type="button" data-action="new-event"><span>＋</span> הוספת אירוע ליום</button></div>';
+    return '<div class="cal-list-view">' + this.areaLabel(this.date, "cal-area-banner") + '<div class="cal-list-caption"><b>תוכנית היום</b><span>' + items.length + (items.length === 1 ? " אירוע" : " אירועים") + '</span></div><div class="cal-list-rows">' + rows + '</div><button class="cal-list-add" type="button" data-action="new-event"><span>＋</span> הוספת אירוע ליום</button></div>';
   }
 
   renderMonth() {
@@ -266,7 +285,7 @@ class WorkCalendar {
       const classes = ["cal-month-cell"];
       if (day.getMonth() !== this.date.getMonth()) classes.push("outside");
       if (dateKey(day) === dateKey(new Date())) classes.push("today");
-      cells += '<div class="' + classes.join(" ") + '" data-action="new-day" data-date="' + dateKey(day) + '"><span class="cal-day-number">' + day.getDate() + '</span><div class="cal-month-events">' + items.slice(0, 3).map((item) => this.eventButton(item, true)).join("") + (items.length > 3 ? '<button class="cal-more" type="button" data-action="show-day" data-date="' + dateKey(day) + '">+' + (items.length - 3) + ' נוספים</button>' : "") + '</div></div>';
+      cells += '<div class="' + classes.join(" ") + '" data-action="new-day" data-date="' + dateKey(day) + '"><span class="cal-day-number">' + day.getDate() + '</span>' + this.areaLabel(day, "cal-area-small") + '<div class="cal-month-events">' + items.slice(0, 3).map((item) => this.eventButton(item, true)).join("") + (items.length > 3 ? '<button class="cal-more" type="button" data-action="show-day" data-date="' + dateKey(day) + '">+' + (items.length - 3) + ' נוספים</button>' : "") + '</div></div>';
     }
     return '<div class="cal-month"><div class="cal-weekdays">' + labels.map((label) => '<span>' + label + '</span>').join("") + '</div><div class="cal-month-grid">' + cells + '</div></div>';
   }
@@ -274,7 +293,7 @@ class WorkCalendar {
   renderWeek() {
     const start = startOfWeek(this.date);
     const days = Array.from({ length: 7 }, (_, index) => { const date = new Date(start); date.setDate(date.getDate() + index); return date; });
-    const header = '<div class="cal-week-head"><div class="cal-timezone">' + escapeHtml(this.organization.timeZone || "זמן מקומי") + '</div>' + days.map((date) => '<div class="cal-week-day ' + (dateKey(date) === dateKey(new Date()) ? "today" : "") + '"><span>' + escapeHtml(new Intl.DateTimeFormat("he-IL", { weekday: "short" }).format(date)) + '</span><b>' + date.getDate() + '</b><div>' + this.visibleEvents(date).filter((item) => item.allDay).slice(0, 1).map((item) => this.eventButton(item, true)).join("") + '</div></div>').join("") + '</div>';
+    const header = '<div class="cal-week-head"><div class="cal-timezone">' + escapeHtml(this.organization.timeZone || "זמן מקומי") + '</div>' + days.map((date) => '<div class="cal-week-day ' + (dateKey(date) === dateKey(new Date()) ? "today" : "") + '"><span>' + escapeHtml(new Intl.DateTimeFormat("he-IL", { weekday: "short" }).format(date)) + '</span><b>' + date.getDate() + '</b>' + this.areaLabel(date, "cal-area-small") + '<div>' + this.visibleEvents(date).filter((item) => item.allDay).slice(0, 1).map((item) => this.eventButton(item, true)).join("") + '</div></div>').join("") + '</div>';
     const hours = '<div class="cal-hour-rail">' + Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => '<span>' + String(index + FIRST_HOUR).padStart(2, "0") + ':00</span>').join("") + '</div>';
     return '<div class="cal-week-scroll"><div class="cal-week-calendar">' + header + '<div class="cal-week-body">' + hours + days.map((date) => this.weekColumn(date)).join("") + '</div></div></div>';
   }
@@ -311,7 +330,7 @@ class WorkCalendar {
       const items = timed.filter((item) => new Date(item.startAt).getHours() === hour);
       return '<div class="cal-day-row"><span>' + String(hour).padStart(2, "0") + ':00</span><div><button type="button" data-action="new-at" data-date="' + dateKey(this.date) + '" data-time="' + String(hour).padStart(2, "0") + ':00" aria-label="יצירת אירוע בשעה ' + hour + '"></button>' + items.map((item) => this.eventButton(item, false)).join("") + '</div></div>';
     }).join("");
-    return '<div class="cal-day-view"><div class="cal-day-title"><b>' + escapeHtml(formatDay(this.date)) + '</b><span>' + this.visibleEvents(this.date).length + ' אירועים</span></div>' + (allDay.length ? '<div class="cal-all-day"><span>כל היום</span><div>' + allDay.map((item) => this.eventButton(item, false)).join("") + '</div></div>' : "") + rows + '</div>';
+    return '<div class="cal-day-view"><div class="cal-day-title"><b>' + escapeHtml(formatDay(this.date)) + '</b>' + this.areaLabel(this.date, "cal-area-inline") + '<span>' + this.visibleEvents(this.date).length + ' אירועים</span></div>' + (allDay.length ? '<div class="cal-all-day"><span>כל היום</span><div>' + allDay.map((item) => this.eventButton(item, false)).join("") + '</div></div>' : "") + rows + '</div>';
   }
 
   canEdit(item) {

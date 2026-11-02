@@ -292,3 +292,28 @@ export function planDay({ date, team = '', visits = [], events = [], now = new D
     worthwhile:!best.unscheduled.length && changes > 0 && (savedKm >= 1 || tightLegs > 0)
   };
 }
+
+// Work areas -------------------------------------------------------------
+const AREA_RADIUS_KM = 12;
+const MAX_AREAS = 3;
+const AREA_NAMES = { 'פתח תקווה':'פ"ת', 'רמת השרון':'רמה"ש', 'ראשון לציון':'ראשל"צ' };
+
+// Names the areas of a day, such as "פ"ת והסביבה": each area is the city with the most stops around it.
+export function workAreas({ date, visits = [], events = [] }) {
+  const located = [
+    ...visits.filter(visit => visit.date === date && visit.status !== 'missed').map(visit => ({ city:cityOf(visit.address), start:toMinutes(visit.time) ?? 0 })),
+    ...events.filter(event => event.startAt && dayKey(new Date(event.startAt)) === date).map(event => ({ city:cityOf(event.location), start:new Date(event.startAt).getHours() * 60 }))
+  ].filter(stop => stop.city);
+  const areas = [];
+  let remaining = located;
+  while (remaining.length) {
+    const centres = [...new Set(remaining.map(stop => stop.city))].map(city => {
+      const members = remaining.filter(stop => kmBetween(CITIES[city], CITIES[stop.city]) <= AREA_RADIUS_KM);
+      return { city, members, own:remaining.filter(stop => stop.city === city).length, first:Math.min(...members.map(stop => stop.start)) };
+    }).sort((a,b) => b.members.length - a.members.length || b.own - a.own || a.first - b.first);
+    const best = centres[0];
+    areas.push({ label:`${AREA_NAMES[best.city] || best.city} והסביבה`, stops:best.members.length, first:best.first });
+    remaining = remaining.filter(stop => !best.members.includes(stop));
+  }
+  return areas.sort((a,b) => b.stops - a.stops || a.first - b.first).slice(0, MAX_AREAS).map(area => area.label);
+}

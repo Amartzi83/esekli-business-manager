@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs } from './scheduler.js?v=10';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas } from './scheduler.js?v=11';
 
 const root = document.getElementById('visits-root');
 if (root) {
@@ -193,6 +193,7 @@ if (root) {
     const benefit = plan.savedKm >= 1 ? `אפשר לחסוך כ־${Math.round(plan.savedKm)} ק״מ` : 'אין מספיק זמן נסיעה בין הביקורים';
     return `<button type="button" class="wl-plan-banner" data-action="open-plan" data-date="${safe(plan.date)}" data-team="${safe(plan.team)}">${icon('route')}<span><b class="wl-he">סדר נסיעה מומלץ${showTeam && plan.team ? ` · ${safe(plan.team)}` : ''}</b><small class="wl-he">${benefit} · ${plan.changes} ביקורים ישנו שעה${plan.overtimeMinutes ? ' · כולל חריגה משעות הבסיס' : ''}</small></span>${icon('right','wl-chev')}</button>`;
   }
+  const areaText = date => workAreas({ date, visits, events:calendarEvents() }).join(' · ');
   const lockMark = visit => visit.fixedTime ? '<span class="wl-lock" role="img" aria-label="שעה מתואמת" title="שעה מתואמת עם הלקוח">🔒</span>' : '';
 
   function rangeVisits() {
@@ -245,10 +246,11 @@ if (root) {
     const started = dayVisits(todayKey()).some(visit => visit.status !== 'planned');
     const tabs = [['list','רשימה'],['month','חודש'],['week','שבוע'],['day','יום']];
     const groups = state.range === 'day' ? [[state.date, shown]] : [...new Set(shown.map(visit => visit.date))].map(date => [date, shown.filter(visit => visit.date === date)]);
-    const rows = shown.length ? groups.map(([date,items]) => `${state.range === 'day' ? '' : `<div class="wl-group"><span class="wl-he">${safe(groupDate(date))}</span><small>${items.length}</small></div>`}${items.map(lineRow).join('')}`).join('') : `<div class="wl-empty wl-he">${list.length ? 'אין ביקורים שמתאימים לסינון.' : 'אין ביקורים בטווח הזה. אפשר להוסיף ביקור חדש.'}</div>`;
+    const rows = shown.length ? groups.map(([date,items]) => `${state.range === 'day' ? '' : `<div class="wl-group"><span class="wl-he">${safe(groupDate(date))}${areaText(date) ? `<em class="wl-area">${safe(areaText(date))}</em>` : ''}</span><small>${items.length}</small></div>`}${items.map(lineRow).join('')}`).join('') : `<div class="wl-empty wl-he">${list.length ? 'אין ביקורים שמתאימים לסינון.' : 'אין ביקורים בטווח הזה. אפשר להוסיף ביקור חדש.'}</div>`;
     return `<div class="wl wl-lines ${state.compact ? 'compact' : ''}">
       <header class="wl-top"><button type="button" class="wl-icon-btn wl-menu-shell" data-action="open-menu" aria-label="תפריט">${icon('dots')}</button><h1>${icon('calendar','wl-green')}<span class="wl-he">קווי עבודה</span></h1><button type="button" class="wl-fab" data-action="new-visit" aria-label="ביקור חדש">${icon('plus')}</button></header>
       <div class="wl-date"><button type="button" data-action="date-next" aria-label="הבא">${icon('left')}</button><span>${icon('calendar')}<b class="wl-he">${safe(rangeLabel())}</b></span><button type="button" data-action="date-prev" aria-label="הקודם">${icon('right')}</button></div>
+      ${state.range === 'day' && areaText(state.date) ? `<p class="wl-area-line wl-he">${safe(areaText(state.date))}</p>` : ''}
       <div class="wl-seg" role="tablist" aria-label="טווח תצוגה">${tabs.map(([key,label]) => `<button type="button" role="tab" aria-selected="${state.range === key}" class="${state.range === key ? 'on' : ''}" data-action="range" data-range="${key}">${label}</button>`).join('')}</div>
       <div class="wl-stats4">
         <div class="wl-stat blue">${icon('users')}<b>${teams}</b><small class="wl-he">צוותים בשטח</small></div>
