@@ -1,4 +1,4 @@
-import { workAreas } from "./scheduler.js?v=12";
+import { endTimeOf, workAreas } from "./scheduler.js?v=13";
 
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
@@ -147,12 +147,14 @@ class WorkCalendar {
     this.clickHandler = this.handleClick.bind(this);
     this.submitHandler = this.handleSubmit.bind(this);
     this.changeHandler = this.handleChange.bind(this);
+    this.inputHandler = this.handleInput.bind(this);
   }
 
   async mount() {
     this.root.addEventListener("click", this.clickHandler);
     this.root.addEventListener("submit", this.submitHandler);
     this.root.addEventListener("change", this.changeHandler);
+    this.root.addEventListener("input", this.inputHandler);
     // Visits are edited on another screen, so the work areas are refreshed when the calendar opens.
     document.addEventListener("click", (event) => { if (event.target.closest('[data-nav="calendar"]')) this.refresh(); });
     await this.refresh();
@@ -239,7 +241,7 @@ class WorkCalendar {
       '<section class="cal-panel"><div class="cal-toolbar"><div class="cal-date-controls"><button type="button" data-action="previous" aria-label="הקודם">›</button><button type="button" data-action="next" aria-label="הבא">‹</button><button class="cal-today" type="button" data-action="today">היום</button><h2>' + escapeHtml(this.title()) + '</h2></div><div class="cal-tools"><div class="cal-view-tabs" role="tablist" aria-label="תצוגת יומן">' + this.viewButton("list", "רשימה") + this.viewButton("day", "יום") + this.viewButton("week", "שבוע") + this.viewButton("month", "חודש") + '</div><div class="cal-filter-wrap"><button class="cal-filter" type="button" data-action="filter" aria-expanded="' + this.filterOpen + '">♧ ' + escapeHtml(chosen ? chosen.name : "כל הצוות") + '⌄</button>' + (this.filterOpen ? '<div class="cal-filter-menu"><button type="button" data-action="filter-member" data-member="">כל הצוות</button>' + this.members.map((member) => '<button type="button" data-action="filter-member" data-member="' + escapeHtml(member.id) + '"><i class="' + escapeHtml(member.color) + '">' + escapeHtml(member.initials) + '</i>' + escapeHtml(member.name) + '</button>').join("") + '</div>' : "") + '</div></div></div>' +
       (this.error ? '<div class="cal-error">' + escapeHtml(this.error) + ' <button type="button" data-action="retry">ניסיון נוסף</button></div>' : this.loading ? '<div class="cal-loading">טוען את היומן…</div>' : this.renderView()) +
       '<div class="cal-legend"><span><i class="plain"></i>אירוע</span><span><i class="linked"></i>אירוע עם משימה מקושרת</span><small>לחיצה על שעה פנויה תיצור אירוע</small></div></section>' +
-      '<p class="cal-demo-note">נתוני הדגמה זמניים · החיבור לשמירה ולשיתוף ארגוני יתווסף בשלב התשתית המשותפת</p>' +
+      '<p class="cal-demo-note">האירועים נשמרים במכשיר הזה עם היסטוריה וגיבוי · שיתוף בין משתמשים יתווסף בשלב התשתית המשותפת</p>' +
       (this.modal ? this.renderModal() : "") + (this.toastMessage ? '<div class="cal-toast" role="status">' + escapeHtml(this.toastMessage) + '</div>' : "") + '</div>';
   }
 
@@ -345,18 +347,28 @@ class WorkCalendar {
   detailsModal(item) {
     const participantNames = (item.participantIds || []).map((id) => this.members.find((member) => member.id === id)).filter(Boolean).map((member) => escapeHtml(member.name)).join(" · ");
     const task = this.tasks.find((value) => value.id === item.taskId);
-    return '<div class="cal-overlay" data-action="backdrop"><section class="cal-dialog" role="dialog" aria-modal="true" aria-labelledby="calDialogTitle"><div class="cal-dialog-top"></div><div class="cal-dialog-head"><small>פרטי אירוע</small><button type="button" data-action="close" aria-label="סגירה">×</button></div><h2 id="calDialogTitle">' + escapeHtml(item.title) + '</h2><div class="cal-detail-list"><p><b>מועד</b><span>' + escapeHtml(formatDay(new Date(item.startAt))) + ' · ' + (item.allDay ? "כל היום" : formatTime(item.startAt) + "–" + formatTime(item.endAt)) + '</span></p>' + (item.location ? '<p><b>מיקום</b><span>' + escapeHtml(item.location) + '</span></p>' : "") + (item.description ? '<p><b>תיאור</b><span>' + escapeHtml(item.description) + '</span></p>' : "") + '<p><b>משתתפים</b><span>' + (participantNames || "לא נבחרו") + '</span></p>' + (task ? '<p><b>משימה מקושרת</b><span>' + escapeHtml(task.title) + '</span></p>' : "") + (item.reminderMinutes != null ? '<p><b>תזכורת</b><span>' + escapeHtml(this.reminderLabel(item.reminderMinutes)) + '</span></p>' : "") + '</div><div class="cal-dialog-actions">' + (this.canEdit(item) ? '<button class="cal-delete" type="button" data-action="delete" data-id="' + escapeHtml(item.id) + '">מחיקה</button><button class="cal-primary" type="button" data-action="edit" data-id="' + escapeHtml(item.id) + '">עריכת אירוע</button>' : '<span>רק יוצר האירוע או מנהל יכולים לערוך אותו</span>') + '</div></section></div>';
+    return '<div class="cal-overlay" data-action="backdrop"><section class="cal-dialog" role="dialog" aria-modal="true" aria-labelledby="calDialogTitle"><div class="cal-dialog-top"></div><div class="cal-dialog-head"><small>פרטי אירוע</small><button type="button" data-action="close" aria-label="סגירה">×</button></div><h2 id="calDialogTitle">' + escapeHtml(item.title) + '</h2><div class="cal-detail-list"><p><b>מועד</b><span>' + escapeHtml(formatDay(new Date(item.startAt))) + ' · ' + (item.allDay ? "כל היום" : formatTime(item.startAt) + "–" + formatTime(item.endAt) + " · " + this.durationOf(item) + " דק׳") + '</span></p>' + (item.location ? '<p><b>מיקום</b><span>' + escapeHtml(item.location) + '</span></p>' : "") + (item.description ? '<p><b>תיאור</b><span>' + escapeHtml(item.description) + '</span></p>' : "") + '<p><b>משתתפים</b><span>' + (participantNames || "לא נבחרו") + '</span></p>' + (task ? '<p><b>משימה מקושרת</b><span>' + escapeHtml(task.title) + '</span></p>' : "") + (item.reminderMinutes != null ? '<p><b>תזכורת</b><span>' + escapeHtml(this.reminderLabel(item.reminderMinutes)) + '</span></p>' : "") + '</div><div class="cal-dialog-actions">' + (this.canEdit(item) ? '<button class="cal-delete" type="button" data-action="delete" data-id="' + escapeHtml(item.id) + '">מחיקה</button><button class="cal-primary" type="button" data-action="edit" data-id="' + escapeHtml(item.id) + '">עריכת אירוע</button>' : '<span>רק יוצר האירוע או מנהל יכולים לערוך אותו</span>') + '</div></section></div>';
   }
 
   editorModal(item) {
     const edit = Boolean(item);
     const date = item ? dateKey(new Date(item.startAt)) : dateKey(this.modal.date || this.date);
     const start = item && !item.allDay ? this.inputTime(item.startAt) : this.modal.time || "09:00";
-    const end = item && !item.allDay ? this.inputTime(item.endAt) : this.modal.time ? String(Math.min(23, Number(this.modal.time.slice(0, 2)) + 1)).padStart(2, "0") + ":00" : "10:00";
+    const duration = item && !item.allDay ? this.durationOf(item) : 60;
+    const timesOff = item && item.allDay ? " disabled" : "";
     const picked = item ? item.participantIds || [] : [];
     const taskOptions = '<option value="">ללא משימה</option>' + this.tasks.map((task) => '<option value="' + escapeHtml(task.id) + '" ' + (item && item.taskId === task.id ? "selected" : "") + '>' + escapeHtml(task.title) + '</option>').join("");
     const memberOptions = this.members.map((member) => '<label><input type="checkbox" name="participantIds" value="' + escapeHtml(member.id) + '" ' + (picked.includes(member.id) ? "checked" : "") + '><i class="' + escapeHtml(member.color) + '">' + escapeHtml(member.initials) + '</i>' + escapeHtml(member.name) + '</label>').join("");
-    return '<div class="cal-overlay" data-action="backdrop"><section class="cal-dialog cal-editor" role="dialog" aria-modal="true" aria-labelledby="calDialogTitle"><div class="cal-dialog-head"><div><small>' + (edit ? "עדכון בלוח המשותף" : "הוספה ללוח המשותף") + '</small><h2 id="calDialogTitle">' + (edit ? "עריכת אירוע" : "אירוע חדש") + '</h2></div><button type="button" data-action="close" aria-label="סגירה">×</button></div><form id="calEventForm"><input type="hidden" name="id" value="' + (item ? escapeHtml(item.id) : "") + '"><label>שם האירוע<input required maxlength="120" name="title" value="' + (item ? escapeHtml(item.title) : "") + '" placeholder="לדוגמה: פגישת צוות"></label><div class="cal-form-row"><label>תאריך<input required type="date" name="date" value="' + date + '"></label><label class="cal-all-day"><input type="checkbox" name="allDay" ' + (item && item.allDay ? "checked" : "") + '> כל היום</label></div><div class="cal-form-row cal-times ' + (item && item.allDay ? "hidden" : "") + '"><label>התחלה<input required type="time" name="startTime" value="' + start + '"></label><label>סיום<input required type="time" name="endTime" value="' + end + '"></label></div><div class="cal-form-row"><label>מיקום<input maxlength="160" name="location" value="' + (item ? escapeHtml(item.location || "") : "") + '" placeholder="כתובת או קישור"></label><label>משימה מקושרת<select name="taskId">' + taskOptions + '</select></label></div><label>תיאור<textarea name="description" maxlength="1000" rows="2" placeholder="פרטים נוספים">' + (item ? escapeHtml(item.description || "") : "") + '</textarea></label><div class="cal-form-row"><label>תזכורת<select name="reminderMinutes"><option value="" ' + (!item || item.reminderMinutes == null ? "selected" : "") + '>ללא תזכורת</option><option value="5" ' + (item && item.reminderMinutes === 5 ? "selected" : "") + '>5 דקות לפני</option><option value="15" ' + (item && item.reminderMinutes === 15 ? "selected" : "") + '>15 דקות לפני</option><option value="30" ' + (item && item.reminderMinutes === 30 ? "selected" : "") + '>30 דקות לפני</option><option value="60" ' + (item && item.reminderMinutes === 60 ? "selected" : "") + '>שעה לפני</option><option value="1440" ' + (item && item.reminderMinutes === 1440 ? "selected" : "") + '>יום לפני</option></select></label><div></div></div><fieldset><legend>משתתפים מהצוות</legend><div class="cal-member-list">' + memberOptions + '</div></fieldset><div class="cal-form-error" role="status"></div><div class="cal-dialog-actions"><button class="cal-secondary" type="button" data-action="close">ביטול</button><button class="cal-primary" type="submit">' + (edit ? "שמירת שינויים" : "יצירת אירוע") + '</button></div></form></section></div>';
+    return '<div class="cal-overlay" data-action="backdrop"><section class="cal-dialog cal-editor" role="dialog" aria-modal="true" aria-labelledby="calDialogTitle"><div class="cal-dialog-head"><div><small>' + (edit ? "עדכון בלוח המשותף" : "הוספה ללוח המשותף") + '</small><h2 id="calDialogTitle">' + (edit ? "עריכת אירוע" : "אירוע חדש") + '</h2></div><button type="button" data-action="close" aria-label="סגירה">×</button></div><form id="calEventForm"><input type="hidden" name="id" value="' + (item ? escapeHtml(item.id) : "") + '"><label>שם האירוע<input required maxlength="120" name="title" value="' + (item ? escapeHtml(item.title) : "") + '" placeholder="לדוגמה: פגישת צוות"></label><div class="cal-form-row"><label>תאריך<input required type="date" name="date" value="' + date + '"></label><label class="cal-all-day"><input type="checkbox" name="allDay" ' + (item && item.allDay ? "checked" : "") + '> כל היום</label></div><div class="cal-form-row cal-times ' + (item && item.allDay ? "hidden" : "") + '"><label>שעת התחלה<input required type="time" name="startTime" value="' + start + '"' + timesOff + '></label><label>משך משוער (דקות)<input required type="number" min="5" max="1440" step="5" name="duration" value="' + duration + '"' + timesOff + '></label><p class="cal-end-time" data-end-time aria-live="polite">' + this.endTimeText(start, duration) + '</p></div><div class="cal-form-row"><label>מיקום<input maxlength="160" name="location" value="' + (item ? escapeHtml(item.location || "") : "") + '" placeholder="כתובת או קישור"></label><label>משימה מקושרת<select name="taskId">' + taskOptions + '</select></label></div><label>תיאור<textarea name="description" maxlength="1000" rows="2" placeholder="פרטים נוספים">' + (item ? escapeHtml(item.description || "") : "") + '</textarea></label><div class="cal-form-row"><label>תזכורת<select name="reminderMinutes"><option value="" ' + (!item || item.reminderMinutes == null ? "selected" : "") + '>ללא תזכורת</option><option value="5" ' + (item && item.reminderMinutes === 5 ? "selected" : "") + '>5 דקות לפני</option><option value="15" ' + (item && item.reminderMinutes === 15 ? "selected" : "") + '>15 דקות לפני</option><option value="30" ' + (item && item.reminderMinutes === 30 ? "selected" : "") + '>30 דקות לפני</option><option value="60" ' + (item && item.reminderMinutes === 60 ? "selected" : "") + '>שעה לפני</option><option value="1440" ' + (item && item.reminderMinutes === 1440 ? "selected" : "") + '>יום לפני</option></select></label><div></div></div><fieldset><legend>משתתפים מהצוות</legend><div class="cal-member-list">' + memberOptions + '</div></fieldset><div class="cal-form-error" role="status"></div><div class="cal-dialog-actions"><button class="cal-secondary" type="button" data-action="close">ביטול</button><button class="cal-primary" type="submit">' + (edit ? "שמירת שינויים" : "יצירת אירוע") + '</button></div></form></section></div>';
+  }
+
+  durationOf(item) {
+    return Math.max(5, Math.round((new Date(item.endAt) - new Date(item.startAt)) / 60000));
+  }
+
+  endTimeText(start, duration) {
+    const end = endTimeOf(start, duration);
+    return end ? "שעת סיום משוערת: <b>" + end.time + "</b>" + (end.nextDay ? " (למחרת)" : "") : "שעת הסיום תחושב לפי שעת ההתחלה והמשך.";
   }
 
   inputTime(value) {
@@ -434,16 +446,18 @@ class WorkCalendar {
   }
 
   async handleSubmit(event) {
-    if (event.target.id !== "calEventForm") return;
+    // matches() rather than .id: the form has a field named "id", which hides the form's own id property.
+    if (!event.target.matches("#calEventForm")) return;
     event.preventDefault();
     const form = event.target;
     const data = new FormData(form);
     const allDay = data.get("allDay") === "on";
     const start = allDay ? localDateTime(data.get("date"), "00:00") : localDateTime(data.get("date"), data.get("startTime"));
-    const end = allDay ? new Date(start.getTime() + DAY_MS) : localDateTime(data.get("date"), data.get("endTime"));
+    const duration = Number(data.get("duration"));
+    const end = allDay ? new Date(start.getTime() + DAY_MS) : new Date(start.getTime() + duration * 60000);
     const errorBox = form.querySelector(".cal-form-error");
     if (!data.get("title").trim()) { errorBox.textContent = "צריך להוסיף שם לאירוע."; return; }
-    if (end <= start) { errorBox.textContent = "שעת הסיום צריכה להיות אחרי שעת ההתחלה."; return; }
+    if (!allDay && !(duration > 0)) { errorBox.textContent = "צריך להזין משך משוער."; return; }
     const payload = {
       organizationId: this.organization.id,
       title: data.get("title").trim(),
@@ -470,8 +484,19 @@ class WorkCalendar {
   handleChange(event) {
     if (event.target.name === "allDay") {
       const fields = this.root.querySelector(".cal-times");
-      if (fields) fields.classList.toggle("hidden", event.target.checked);
+      if (fields) {
+        fields.classList.toggle("hidden", event.target.checked);
+        // Hidden fields must not block saving an all-day event.
+        fields.querySelectorAll("input").forEach((input) => { input.disabled = event.target.checked; });
+      }
     }
+  }
+
+  handleInput(event) {
+    if (event.target.name !== "startTime" && event.target.name !== "duration") return;
+    const form = event.target.form;
+    const output = form && form.querySelector("[data-end-time]");
+    if (output) output.innerHTML = this.endTimeText(form.elements.startTime.value, form.elements.duration.value);
   }
 
   toast(message) {

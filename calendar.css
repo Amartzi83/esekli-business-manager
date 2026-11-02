@@ -13,3 +13,7 @@
 html[data-theme="dark"] #calendarPage .cal-week-day>span.cal-area-small{color:#7ff0ad}
 html[data-theme="dark"] .cal-area,html[data-theme="dark"] #calendarPage .cal-day-title .cal-area{color:#7ff0ad}
 @media(max-width:760px){.cal-area-banner{margin:10px 10px 0;font-size:14px}.cal-area-small{font-size:10px}#calendarPage .cal-day-title .cal-area{font-size:13px}}
+
+/* The event's end is calculated from its start and estimated duration */
+.cal-end-time{grid-column:1/-1;margin:-3px 0 10px;color:var(--muted);font-size:12px}
+.cal-end-time b{color:var(--ink);font-size:14px}

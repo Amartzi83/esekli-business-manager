@@ -46,7 +46,7 @@ const FIELD_LABELS = {
   name:'שם', client:'לקוח', service:'שירות', address:'כתובת', date:'תאריך', time:'שעה', duration:'משך', team:'צוות', phone:'טלפון',
   status:'סטטוס', tasks:'משימות הביקור', issues:'תקלות', startedAt:'התחלה', finishedAt:'סיום', photo:'תמונה', samplePhotos:'תמונות',
   startAt:'התחלה', endAt:'סיום', allDay:'כל היום', location:'מיקום', description:'תיאור', participantIds:'משתתפים', taskId:'משימה מקושרת',
-  reminderMinutes:'תזכורת', members:'אנשי צוות', vehicle:'רכב', image:'תמונה',
+  reminderMinutes:'תזכורת', updatedById:'עדכון אחרון על ידי', createdById:'נוצר על ידי', members:'אנשי צוות', vehicle:'רכב', image:'תמונה',
   qty:'כמות', category:'קטגוריה', supplier:'ספק', price:'מחיר', bought:'נקנה', boughtAt:'זמן קנייה', repeat:'חזרה', doneAt:'זמן ביצוע',
   type:'סוג', contact:'איש קשר', email:'אימייל', plan:'חבילת שירות', sites:'גינות', since:'לקוח מאז', log:'יומן פעילות'
 };
