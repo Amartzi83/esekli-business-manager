@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas } from './scheduler.js?v=11';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf } from './scheduler.js?v=12';
 
 const root = document.getElementById('visits-root');
 if (root) {
@@ -194,6 +194,7 @@ if (root) {
     return `<button type="button" class="wl-plan-banner" data-action="open-plan" data-date="${safe(plan.date)}" data-team="${safe(plan.team)}">${icon('route')}<span><b class="wl-he">סדר נסיעה מומלץ${showTeam && plan.team ? ` · ${safe(plan.team)}` : ''}</b><small class="wl-he">${benefit} · ${plan.changes} ביקורים ישנו שעה${plan.overtimeMinutes ? ' · כולל חריגה משעות הבסיס' : ''}</small></span>${icon('right','wl-chev')}</button>`;
   }
   const areaText = date => workAreas({ date, visits, events:calendarEvents() }).join(' · ');
+  const endOf = visit => endTimeOf(visit.time, visit.duration)?.time || '';
   const lockMark = visit => visit.fixedTime ? '<span class="wl-lock" role="img" aria-label="שעה מתואמת" title="שעה מתואמת עם הלקוח">🔒</span>' : '';
 
   function rangeVisits() {
@@ -266,7 +267,7 @@ if (root) {
     </div>`;
   }
   function lineRow(visit) {
-    return `<button type="button" class="wl-row" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-time">${safe(visit.time)}${lockMark(visit)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-he">${safe(visit.client)} | ${safe(visit.service)}</span><span class="wl-addr">${icon('pin')}<span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit)}${icon('right','wl-chev')}</button>`;
+    return `<button type="button" class="wl-row" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-time">${safe(visit.time)}${lockMark(visit)}<small>${safe(endOf(visit))}</small></span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-he">${safe(visit.client)} | ${safe(visit.service)}</span><span class="wl-addr">${icon('pin')}<span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit)}${icon('right','wl-chev')}</button>`;
   }
 
   // Screen 2 — daily route
@@ -337,7 +338,7 @@ if (root) {
       const meta = STATUS[visit.status] || STATUS.planned;
       const leg = legs[visit.id];
       const legRow = leg ? `<div class="wl-leg ${leg.tight ? 'tight' : ''}">${icon('car')}<span class="wl-he">${leg.minutes} דק׳ נסיעה${leg.km == null ? '' : ` · כ־${Math.max(1, Math.round(leg.km))} ק״מ`}${leg.tight ? ' · אין מספיק זמן' : ''}</span></div>` : '';
-      return `${legRow}<button type="button" class="wl-row wl-route-row ${visit === next ? 'is-next' : ''}" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-num ${meta.kind}">${index+1}</span><span class="wl-time">${safe(visit.time)}${lockMark(visit)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-addr"><span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit,'route')}${icon('right','wl-chev')}</button>`;
+      return `${legRow}<button type="button" class="wl-row wl-route-row ${visit === next ? 'is-next' : ''}" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-num ${meta.kind}">${index+1}</span><span class="wl-time">${safe(visit.time)}${lockMark(visit)}<small>${safe(endOf(visit))}</small></span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-addr"><span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit,'route')}${icon('right','wl-chev')}</button>`;
     }).join('') : '<div class="wl-empty wl-he">אין ביקורים ביום הזה.</div>';
     return `<div class="wl wl-route">
       <header class="wl-top"><button type="button" class="wl-icon-btn" data-action="back" aria-label="חזרה">${icon('left')}</button><div class="wl-title-stack"><h1>${icon('route','wl-green')}<span class="wl-he">מסלול יומי</span></h1><small class="wl-he">${safe(longDate(state.date))}</small></div><button type="button" class="wl-icon-btn" data-action="menu" aria-label="אפשרויות">${icon('dots')}</button></header>
@@ -378,7 +379,7 @@ if (root) {
       body = `<div class="wl-info3">
           <div class="wl-tile">${icon('pinLine')}<span><small class="wl-he">כתובת</small><b class="wl-he">${safe(visit.address)}</b></span></div>
           <div class="wl-tile">${icon('calendar')}<span><small class="wl-he">תאריך</small><b>${safe(shortDate(visit.date))}</b></span></div>
-          <div class="wl-tile">${icon('clock')}<span><small class="wl-he">זמן מתוכנן</small><b class="wl-he">${safe(visit.duration)} דק׳</b></span></div>
+          <div class="wl-tile">${icon('clock')}<span><small class="wl-he">שעות הביקור (${safe(visit.duration)} דק׳)</small><b dir="ltr">${safe(visit.time)}–${safe(endOf(visit))}</b></span></div>
         </div>
         ${taskCard(visit, false)}
         <section class="wl-card wl-photos"><div class="wl-card-head">${icon('photo')}<b class="wl-he">תמונות מהביקור</b></div><div class="wl-photo-grid" data-photo-grid>${photoTiles(visit, [])}</div></section>
@@ -492,7 +493,8 @@ if (root) {
       <label class="v-field">כתובת (רחוב, מספר, עיר)<input name="address" maxlength="100" value="${safe(value.address)}" placeholder="הרצל 12, תל אביב" required></label>
       <div class="v-form-row"><label class="v-field">משך ביקור משוער (דקות)<input name="duration" type="number" min="10" max="600" step="5" value="${safe(value.duration)}" required></label><label class="v-field">צוות<input name="team" maxlength="40" value="${safe(value.team)}"></label></div>
       <section class="wl-suggest" data-suggestions aria-live="polite"></section>
-      <div class="v-form-row"><label class="v-field">תאריך<input name="date" type="date" value="${safe(value.date)}" required></label><label class="v-field">שעה<input name="time" type="time" value="${safe(value.time)}" required></label></div>
+      <div class="v-form-row"><label class="v-field">תאריך<input name="date" type="date" value="${safe(value.date)}" required></label><label class="v-field">שעת התחלה<input name="time" type="time" value="${safe(value.time)}" required></label></div>
+      <p class="wl-end-time" data-end-time aria-live="polite"></p>
       <p class="wl-slot-warning" data-slot-warning hidden></p>
       <label class="wl-lock-field"><input type="checkbox" name="fixedTime" ${value.fixedTime ? 'checked' : ''}><span>🔒 שעה מתואמת עם הלקוח (לא תזוז בסידור המסלול)</span></label>
       <label class="v-field">טלפון של הלקוח<input name="phone" type="tel" maxlength="20" value="${safe(value.phone)}" placeholder="050-0000000" dir="ltr"></label>
@@ -538,6 +540,8 @@ if (root) {
       return `<button type="button" class="wl-suggestion ${selected ? 'on' : ''}" data-suggest-date="${safe(slot.date)}" data-suggest-time="${safe(slot.time)}" aria-pressed="${selected}"><span class="wl-suggestion-top"><b>${safe(suggestionDay(slot.date))}</b>${index === 0 && slot.extraKm != null ? '<small class="wl-best">מומלץ</small>' : ''}<strong>${safe(slot.time)}–${safe(slot.endTime)}</strong></span><span>${safe(suggestionReason(slot, result.city))}</span><small>${[overtime, cost, slot.stops ? (slot.stops === 1 ? 'פריט אחד ביומן ביום זה' : `${slot.stops} פריטים ביומן ביום זה`) : ''].filter(Boolean).join(' · ')}</small></button>`;
     }).join('')}</div><p class="wl-suggest-note">ההערכה לפי מרחק בין ערים. שעות הבסיס: א׳–ה׳ 07:30–18:00, ו׳ עד 13:00. כשאין מקום מוצעת גם חריגה קטנה.</p>`;
 
+    const end = endTimeOf(values.time, values.duration);
+    dialog.querySelector('[data-end-time]').innerHTML = end ? `שעת סיום משוערת: <b>${safe(end.time)}</b>${end.nextDay ? ' (למחרת)' : ''}` : 'שעת הסיום תחושב לפי שעת ההתחלה והמשך.';
     const warning = dialog.querySelector('[data-slot-warning]');
     const check = checkSlot({ date:values.date, time:values.time, duration:values.duration, ...context });
     const message = !check ? '' : check.overlap ? `המועד הזה חופף ל"${check.overlap.label}" (${check.overlap.start}–${check.overlap.end}).` : check.closed ? 'המועד הזה יוצא בשבת. אפשר לשמור בכל זאת.' : check.outsideHours ? `המועד הזה חורג משעות הבסיס (${check.baseHours}). אפשר לשמור בכל זאת.` : '';
@@ -582,7 +586,7 @@ if (root) {
     const when = new Intl.DateTimeFormat('he-IL',{ weekday:'long', day:'numeric', month:'long' }).format(fromKey(date));
     planDialog.innerHTML = `<div class="wl-plan"><h2>סדר נסיעה מומלץ</h2><p>${safe(when)}${team ? ` · ${safe(team)}` : ''}</p>
       <div class="wl-plan-km"><span><small>עכשיו</small><b>כ־${Math.round(plan.currentKm)} ק״מ</b></span><span aria-hidden="true">←</span><span class="after"><small>בסדר המוצע</small><b>כ־${Math.round(plan.plannedKm)} ק״מ</b></span></div>
-      <ol class="wl-plan-list">${plan.stops.map(stop => `<li class="${stop.moved ? 'moved' : ''}"><b>${safe(stop.label)}</b><span>${stop.locked ? '🔒 ' : ''}${stop.moved ? `<s>${safe(stop.oldTime)}</s> ← <strong>${safe(stop.time)}</strong>` : `${safe(stop.time)} · ללא שינוי`}</span></li>`).join('')}</ol>
+      <ol class="wl-plan-list">${plan.stops.map(stop => `<li class="${stop.moved ? 'moved' : ''}"><b>${safe(stop.label)}</b><span>${stop.locked ? '🔒 ' : ''}${stop.moved ? `<s>${safe(stop.oldTime)}</s> ← <strong>${safe(stop.time)}–${safe(stop.endTime)}</strong>` : `${safe(stop.time)}–${safe(stop.endTime)} · ללא שינוי`}</span></li>`).join('')}</ol>
       ${plan.overtimeMinutes ? `<p class="wl-slot-warning">היום יסתיים ${plan.overtimeMinutes} דק׳ אחרי שעות הבסיס (${safe(plan.baseClose)}).</p>` : ''}
       <p class="wl-plan-note">ביקורים שהושלמו, ביקור פעיל, ביקורים עם שעה מתואמת ואירועי יומן לא זזים. המרחקים הם הערכה לפי ערים.</p>
       <div class="v-dialog-actions"><button type="button" class="v-button primary" data-plan-apply>החלת הסדר</button><button type="button" class="v-button" data-plan-close>ביטול</button></div></div>`;

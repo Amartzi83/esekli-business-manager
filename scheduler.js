@@ -38,8 +38,17 @@ const KM_PER_DAY_LATER = .4;
 
 const pad = value => String(value).padStart(2,'0');
 const dayKey = date => `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
-const toMinutes = time => { const [hours, minutes] = String(time || '').split(':').map(Number); return Number.isFinite(hours) ? hours * 60 + (minutes || 0) : null; };
+const toMinutes = time => { const match = /^(\d{1,2}):(\d{2})/.exec(String(time || '')); return match ? Number(match[1]) * 60 + Number(match[2]) : null; };
 export const toTime = minutes => `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
+
+// The end of a visit, from its start time and estimated duration.
+export function endTimeOf(time, duration) {
+  const start = toMinutes(time);
+  const minutes = Number(duration);
+  if (start == null || !(minutes > 0)) return null;
+  const end = start + minutes;
+  return { time:toTime(end % 1440), nextDay:end >= 1440 };
+}
 
 // The city is normally last in an address, so the match ending latest wins ("הרצליה 5, רעננה" is in רעננה).
 export function cityOf(address) {

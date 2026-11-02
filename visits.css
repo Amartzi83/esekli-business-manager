@@ -123,6 +123,9 @@ html[data-theme="dark"] .wl { --card:#141c19; --ln:#25312c; --tx:#eef3f0; --mut:
 .wl-lines .wl-row::before { position:absolute; top:0; bottom:0; left:58px; width:1px; background:var(--ln); content:""; }
 .wl-row:hover { background:linear-gradient(90deg,transparent,var(--g-soft),transparent); }
 .wl-time { font-size:15px; font-weight:600; }
+.wl-time small { display:block; margin-top:2px; color:var(--mut); font-size:12px; font-weight:500; }
+.wl-end-time { margin:-4px 0 12px; color:var(--muted); font-size:13px; }
+.wl-end-time b { color:var(--ink); font-size:15px; }
 .wl-thumb { width:96px; height:66px; display:block; border-radius:9px; object-fit:cover; background:#2b3a31; }
 .wl-copy { min-width:0; display:grid; gap:3px; }
 .wl-copy > * { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

@@ -1,4 +1,4 @@
-import { workAreas } from "./scheduler.js?v=11";
+import { workAreas } from "./scheduler.js?v=12";
 
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
