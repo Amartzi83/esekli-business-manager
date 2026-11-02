@@ -4,7 +4,7 @@ if (root) {
   const VISITS_KEY = 'esekli-garden-visits-v1';
   const TEAM = [
     { id:'nehorai', name:'נהוראי מרציאנו', initial:'נ', tone:'peach' },
-    { id:'partner', name:'שותף לעסק', initial:'ש', tone:'mint' }
+    { id:'partner', name:'דוב', initial:'ד', tone:'mint' }
   ];
   const PRIORITIES = { high:'דחוף', normal:'רגיל', low:'נמוך' };
   const GROUPS = [['overdue','באיחור'],['today','היום'],['tomorrow','מחר'],['later','בהמשך'],['none','ללא מועד']];

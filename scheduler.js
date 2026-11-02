@@ -25,7 +25,7 @@ const ALIASES = {
 // Base hours in minutes from midnight, by day of the week (0 = Sunday). Saturday is closed.
 export const WORK_HOURS = { 0:[450,1080], 1:[450,1080], 2:[450,1080], 3:[450,1080], 4:[450,1080], 5:[450,780] };
 // Hours are flexible: when a day has no room, suggestions and plans may run this far past closing, and say so.
-const FLEX_MINUTES = 90;
+const FLEX_MINUTES = 120;
 const OVERTIME_PENALTY_KM = 8;
 const SEARCH_DAYS = 21;
 const ROAD_FACTOR = 1.35;

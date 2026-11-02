@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs } from './scheduler.js?v=8';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs } from './scheduler.js?v=10';
 
 const root = document.getElementById('visits-root');
 if (root) {
@@ -124,9 +124,12 @@ if (root) {
   try { workday = JSON.parse(localStorage.getItem(DAY_KEY) || 'null'); } catch { workday = null; }
   if (!workday) workday = {
     team:'צוות 1 - נהוראי',
-    members:[{ name:'נהוראי מרציאנו', initial:'נ' }, { name:'שותף לעסק', initial:'ש' }],
+    members:[{ name:'נהוראי מרציאנו', initial:'נ' }, { name:'דוב', initial:'ד' }],
     vehicle:{ label:'רכב גינון', model:'קיה ריו', plate:'123-45-678' }
   };
+
+  // Team data saved on a device before the partner's name was set.
+  workday.members.forEach(member => { if (member.name === 'שותף לעסק') Object.assign(member, { name:'דוב', initial:'ד' }); });
 
   const state = { view:'lines', range:'day', date:todayKey(), status:'', client:'', team:'', compact:false, visitId:null, tab:'details', menu:false, mapStyle:'satellite' };
   // Writes go through the shared store (history + backups) when it is loaded.

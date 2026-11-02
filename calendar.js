@@ -7,7 +7,7 @@ const CALENDAR_KEY = "esekli-calendar-v1";
 const demoOrganization = { id: "org-demo", name: "העסק שלי", timeZone: "Asia/Jerusalem" };
 const demoMembers = [
   { id: "u-nahorai", name: "נהוראי מרציאנו", initials: "נ", color: "teal", role: "admin" },
-  { id: "u-business-partner", name: "שותף לעסק", initials: "ש", color: "blue", role: "member" }
+  { id: "u-business-partner", name: "דוב", initials: "ד", color: "blue", role: "member" }
 ];
 const demoTasks = [
   { id: "task-1", title: "בדיקת השקיה בגינת השרון", organizationId: "org-demo" },

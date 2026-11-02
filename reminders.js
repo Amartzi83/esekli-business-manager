@@ -1,7 +1,7 @@
 const root = document.getElementById('reminders-root');
 if (root) {
   const STORAGE_KEY = 'esekli-reminders-v1';
-  const TEAM = [{ id:'nehorai', name:'נהוראי מרציאנו', initial:'נ', tone:'peach' }, { id:'partner', name:'שותף לעסק', initial:'ש', tone:'mint' }];
+  const TEAM = [{ id:'nehorai', name:'נהוראי מרציאנו', initial:'נ', tone:'peach' }, { id:'partner', name:'דוב', initial:'ד', tone:'mint' }];
   const REPEAT = { none:'ללא חזרה', daily:'כל יום', weekly:'כל שבוע', monthly:'כל חודש' };
   const GROUPS = [['overdue','באיחור'],['today','היום'],['tomorrow','מחר'],['week','השבוע'],['later','בהמשך']];
   const pad = value => String(value).padStart(2,'0');
