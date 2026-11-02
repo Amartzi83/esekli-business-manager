@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf } from './scheduler.js?v=13';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf, roundDuration, durationLabel, durationChoices } from './scheduler.js?v=14';
 
 const root = document.getElementById('visits-root');
 if (root) {
@@ -130,6 +130,9 @@ if (root) {
 
   // Team data saved on a device before the partner's name was set.
   workday.members.forEach(member => { if (member.name === 'שותף לעסק') Object.assign(member, { name:'דוב', initial:'ד' }); });
+
+  // Durations are in hours and half hours; older visits may hold other values.
+  visits.forEach(visit => { visit.duration = roundDuration(visit.duration); });
 
   const state = { view:'lines', range:'day', date:todayKey(), status:'', client:'', team:'', compact:false, visitId:null, tab:'details', menu:false, mapStyle:'satellite' };
   // Writes go through the shared store (history + backups) when it is loaded.
@@ -379,7 +382,7 @@ if (root) {
       body = `<div class="wl-info3">
           <div class="wl-tile">${icon('pinLine')}<span><small class="wl-he">כתובת</small><b class="wl-he">${safe(visit.address)}</b></span></div>
           <div class="wl-tile">${icon('calendar')}<span><small class="wl-he">תאריך</small><b>${safe(shortDate(visit.date))}</b></span></div>
-          <div class="wl-tile">${icon('clock')}<span><small class="wl-he">שעות הביקור (${safe(visit.duration)} דק׳)</small><b dir="ltr">${safe(visit.time)}–${safe(endOf(visit))}</b></span></div>
+          <div class="wl-tile">${icon('clock')}<span><small class="wl-he">שעות הביקור</small><b dir="ltr">${safe(visit.time)}–${safe(endOf(visit))}</b><small class="wl-he">${safe(durationLabel(visit.duration))}</small></span></div>
         </div>
         ${taskCard(visit, false)}
         <section class="wl-card wl-photos"><div class="wl-card-head">${icon('photo')}<b class="wl-he">תמונות מהביקור</b></div><div class="wl-photo-grid" data-photo-grid>${photoTiles(visit, [])}</div></section>
@@ -491,7 +494,7 @@ if (root) {
       <label class="v-field">שם הגינה / האתר<input name="name" maxlength="70" value="${safe(value.name)}" placeholder="למשל: גינת רמות" required></label>
       <div class="v-form-row"><label class="v-field">לקוח<input name="client" maxlength="60" value="${safe(value.client)}" placeholder="חברת ניהול / לקוח פרטי" required></label><label class="v-field">סוג שירות<select name="service">${services.map(service => `<option ${service === value.service ? 'selected' : ''}>${safe(service)}</option>`).join('')}</select></label></div>
       <label class="v-field">כתובת (רחוב, מספר, עיר)<input name="address" maxlength="100" value="${safe(value.address)}" placeholder="הרצל 12, תל אביב" required></label>
-      <div class="v-form-row"><label class="v-field">משך ביקור משוער (דקות)<input name="duration" type="number" min="10" max="600" step="5" value="${safe(value.duration)}" required></label><label class="v-field">צוות<input name="team" maxlength="40" value="${safe(value.team)}"></label></div>
+      <div class="v-form-row"><label class="v-field">משך ביקור משוער<select name="duration">${durationChoices(value.duration).map(choice => `<option value="${choice.value}" ${choice.selected ? 'selected' : ''}>${choice.label}</option>`).join('')}</select></label><label class="v-field">צוות<input name="team" maxlength="40" value="${safe(value.team)}"></label></div>
       <section class="wl-suggest" data-suggestions aria-live="polite"></section>
       <div class="v-form-row"><label class="v-field">תאריך<input name="date" type="date" value="${safe(value.date)}" required></label><label class="v-field">שעת התחלה<input name="time" type="time" value="${safe(value.time)}" required></label></div>
       <p class="wl-end-time" data-end-time aria-live="polite"></p>

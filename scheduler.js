@@ -41,6 +41,24 @@ const dayKey = date => `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(da
 const toMinutes = time => { const match = /^(\d{1,2}):(\d{2})/.exec(String(time || '')); return match ? Number(match[1]) * 60 + Number(match[2]) : null; };
 export const toTime = minutes => `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
 
+// Durations are chosen in hours and half hours, and kept in minutes.
+const MAX_DURATION_MINUTES = 720;
+export const roundDuration = minutes => Math.max(30, Math.ceil((Number(minutes) || 60) / 30) * 30);
+export function durationLabel(minutes) {
+  const rounded = roundDuration(minutes);
+  const hours = Math.floor(rounded / 60);
+  const half = rounded % 60 > 0;
+  const whole = hours === 0 ? '' : hours === 1 ? 'שעה' : hours === 2 ? 'שעתיים' : `${hours} שעות`;
+  const label = !whole ? 'חצי שעה' : half ? `${whole} וחצי` : whole;
+  return Number(minutes) === rounded ? label : `כ־${label}`;
+}
+export function durationChoices(current) {
+  const selected = roundDuration(current);
+  const values = Array.from({ length:MAX_DURATION_MINUTES / 30 }, (_, index) => (index + 1) * 30);
+  if (!values.includes(selected)) values.push(selected);
+  return values.map(value => ({ value, label:durationLabel(value), selected:value === selected }));
+}
+
 // The end of a visit, from its start time and estimated duration.
 export function endTimeOf(time, duration) {
   const start = toMinutes(time);
