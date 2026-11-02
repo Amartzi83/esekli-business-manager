@@ -1,9 +1,11 @@
-import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=14";
+import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=15";
 
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
 const LAST_HOUR = 21;
 const HOUR_HEIGHT = 56;
+// From this hour the calendar is tinted red: a warning not to run later.
+const LATE_HOUR = 18;
 
 const CALENDAR_KEY = "esekli-calendar-v1";
 const demoOrganization = { id: "org-demo", name: "העסק שלי", timeZone: "Asia/Jerusalem" };
@@ -240,7 +242,7 @@ class WorkCalendar {
       '<div class="cal-summary"><div class="cal-summary-card"><span class="cal-summary-icon teal">▦</span><span><small>אירועים היום</small><b>' + todayCount + '</b><small>ביומן הצוות</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon blue">✓</span><span><small>משימות מקושרות</small><b>' + linkedCount + '</b><small>מתוך האירועים היום</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon orange">◷</span><span><small>זמן מתוכנן</small><b>' + plannedHours + ' שעות</b><small>לאירועים היום</small></span></div><div class="cal-summary-card"><span class="cal-summary-icon team">♧</span><span><small>חברי הצוות</small><b>' + this.members.length + ' אנשים</b></span><div class="cal-avatars">' + this.members.slice(0, 4).map((member) => '<i class="' + escapeHtml(member.color) + '" title="' + escapeHtml(member.name) + '">' + escapeHtml(member.initials) + '</i>').join("") + '</div></div></div>' +
       '<section class="cal-panel"><div class="cal-toolbar"><div class="cal-date-controls"><button type="button" data-action="previous" aria-label="הקודם">›</button><button type="button" data-action="next" aria-label="הבא">‹</button><button class="cal-today" type="button" data-action="today">היום</button><h2>' + escapeHtml(this.title()) + '</h2></div><div class="cal-tools"><div class="cal-view-tabs" role="tablist" aria-label="תצוגת יומן">' + this.viewButton("list", "רשימה") + this.viewButton("day", "יום") + this.viewButton("week", "שבוע") + this.viewButton("month", "חודש") + '</div><div class="cal-filter-wrap"><button class="cal-filter" type="button" data-action="filter" aria-expanded="' + this.filterOpen + '">♧ ' + escapeHtml(chosen ? chosen.name : "כל הצוות") + '⌄</button>' + (this.filterOpen ? '<div class="cal-filter-menu"><button type="button" data-action="filter-member" data-member="">כל הצוות</button>' + this.members.map((member) => '<button type="button" data-action="filter-member" data-member="' + escapeHtml(member.id) + '"><i class="' + escapeHtml(member.color) + '">' + escapeHtml(member.initials) + '</i>' + escapeHtml(member.name) + '</button>').join("") + '</div>' : "") + '</div></div></div>' +
       (this.error ? '<div class="cal-error">' + escapeHtml(this.error) + ' <button type="button" data-action="retry">ניסיון נוסף</button></div>' : this.loading ? '<div class="cal-loading">טוען את היומן…</div>' : this.renderView()) +
-      '<div class="cal-legend"><span><i class="plain"></i>אירוע</span><span><i class="linked"></i>אירוע עם משימה מקושרת</span><small>לחיצה על שעה פנויה תיצור אירוע</small></div></section>' +
+      '<div class="cal-legend"><span><i class="plain"></i>אירוע</span><span><i class="linked"></i>אירוע עם משימה מקושרת</span><span><i class="late"></i>אחרי ' + LATE_HOUR + ':00</span><small>לחיצה על שעה פנויה תיצור אירוע</small></div></section>' +
       '<p class="cal-demo-note">האירועים נשמרים במכשיר הזה עם היסטוריה וגיבוי · שיתוף בין משתמשים יתווסף בשלב התשתית המשותפת</p>' +
       (this.modal ? this.renderModal() : "") + (this.toastMessage ? '<div class="cal-toast" role="status">' + escapeHtml(this.toastMessage) + '</div>' : "") + '</div>';
   }
@@ -269,8 +271,9 @@ class WorkCalendar {
     if (!items.length) return this.areaLabel(this.date, "cal-area-banner") + '<div class="cal-list-empty"><span>▦</span><b>אין אירועים מתוכננים ליום הזה</b><small>אפשר להוסיף אירוע ולשתף אותו עם הצוות.</small><button class="cal-primary" type="button" data-action="new-event"><span>＋</span> אירוע חדש</button></div>';
     const rows = items.map((item) => {
       const participantCount = (item.participantIds || []).length;
+      const late = !item.allDay && this.endsLate(item.startAt, item.endAt);
       const meta = [item.location, participantCount ? participantCount + (participantCount === 1 ? " איש צוות" : " אנשי צוות") : "ללא משתתפים"].filter(Boolean).join(" · ");
-      return '<div class="cal-list-row"><span class="cal-list-time">' + (item.allDay ? "כל היום" : formatTime(item.startAt)) + (item.allDay ? "" : '<small>' + formatTime(item.endAt) + '</small>') + '</span><span class="cal-list-marker ' + this.eventClass(item) + '"></span><button type="button" class="cal-list-card ' + this.eventClass(item) + '" data-action="open-event" data-id="' + escapeHtml(item.id) + '"><span class="cal-list-card-head"><b>' + escapeHtml(item.title) + '</b><span class="cal-list-tag">' + (item.taskId ? "משימה מקושרת" : "אירוע צוותי") + '</span></span><span class="cal-list-meta">' + escapeHtml(meta || "פרטי האירוע") + '</span><span class="cal-list-arrow" aria-hidden="true">‹</span></button></div>';
+      return '<div class="cal-list-row' + (late ? " cal-late" : "") + '"><span class="cal-list-time">' + (item.allDay ? "כל היום" : formatTime(item.startAt)) + (item.allDay ? "" : '<small>' + formatTime(item.endAt) + '</small>') + '</span><span class="cal-list-marker ' + this.eventClass(item) + '"></span><button type="button" class="cal-list-card ' + this.eventClass(item) + '" data-action="open-event" data-id="' + escapeHtml(item.id) + '"><span class="cal-list-card-head"><b>' + escapeHtml(item.title) + '</b><span class="cal-list-tag">' + (item.taskId ? "משימה מקושרת" : "אירוע צוותי") + '</span></span><span class="cal-list-meta">' + escapeHtml(meta || "פרטי האירוע") + '</span><span class="cal-list-arrow" aria-hidden="true">‹</span></button></div>';
     }).join("");
     return '<div class="cal-list-view">' + this.areaLabel(this.date, "cal-area-banner") + '<div class="cal-list-caption"><b>תוכנית היום</b><span>' + items.length + (items.length === 1 ? " אירוע" : " אירועים") + '</span></div><div class="cal-list-rows">' + rows + '</div><button class="cal-list-add" type="button" data-action="new-event"><span>＋</span> הוספת אירוע ליום</button></div>';
   }
@@ -296,7 +299,7 @@ class WorkCalendar {
     const start = startOfWeek(this.date);
     const days = Array.from({ length: 7 }, (_, index) => { const date = new Date(start); date.setDate(date.getDate() + index); return date; });
     const header = '<div class="cal-week-head"><div class="cal-timezone">' + escapeHtml(this.organization.timeZone || "זמן מקומי") + '</div>' + days.map((date) => '<div class="cal-week-day ' + (dateKey(date) === dateKey(new Date()) ? "today" : "") + '"><span>' + escapeHtml(new Intl.DateTimeFormat("he-IL", { weekday: "short" }).format(date)) + '</span><b>' + date.getDate() + '</b>' + this.areaLabel(date, "cal-area-small") + '<div>' + this.visibleEvents(date).filter((item) => item.allDay).slice(0, 1).map((item) => this.eventButton(item, true)).join("") + '</div></div>').join("") + '</div>';
-    const hours = '<div class="cal-hour-rail">' + Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => '<span>' + String(index + FIRST_HOUR).padStart(2, "0") + ':00</span>').join("") + '</div>';
+    const hours = '<div class="cal-hour-rail">' + Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => '<span' + (index + FIRST_HOUR >= LATE_HOUR ? ' class="cal-late"' : "") + '>' + String(index + FIRST_HOUR).padStart(2, "0") + ':00</span>').join("") + '</div>';
     return '<div class="cal-week-scroll"><div class="cal-week-calendar">' + header + '<div class="cal-week-body">' + hours + days.map((date) => this.weekColumn(date)).join("") + '</div></div></div>';
   }
 
@@ -312,7 +315,7 @@ class WorkCalendar {
       return { item, col };
     });
     const count = Math.max(1, columns.length);
-    const slots = Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => '<button type="button" class="cal-hour-slot" aria-label="יצירת אירוע בשעה ' + (index + FIRST_HOUR) + '" data-action="new-at" data-date="' + dateKey(date) + '" data-time="' + String(index + FIRST_HOUR).padStart(2, "0") + ':00"></button>').join("");
+    const slots = Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => '<button type="button" class="cal-hour-slot' + (index + FIRST_HOUR >= LATE_HOUR ? " cal-late" : "") + '" aria-label="יצירת אירוע בשעה ' + (index + FIRST_HOUR) + (index + FIRST_HOUR >= LATE_HOUR ? ", אחרי שעות העבודה" : "") + '" data-action="new-at" data-date="' + dateKey(date) + '" data-time="' + String(index + FIRST_HOUR).padStart(2, "0") + ':00"></button>').join("");
     const blocks = positioned.map(({ item, col }) => {
       const start = new Date(item.startAt);
       const end = new Date(item.endAt);
@@ -330,7 +333,7 @@ class WorkCalendar {
     const rows = Array.from({ length: LAST_HOUR - FIRST_HOUR }, (_, index) => {
       const hour = index + FIRST_HOUR;
       const items = timed.filter((item) => new Date(item.startAt).getHours() === hour);
-      return '<div class="cal-day-row"><span>' + String(hour).padStart(2, "0") + ':00</span><div><button type="button" data-action="new-at" data-date="' + dateKey(this.date) + '" data-time="' + String(hour).padStart(2, "0") + ':00" aria-label="יצירת אירוע בשעה ' + hour + '"></button>' + items.map((item) => this.eventButton(item, false)).join("") + '</div></div>';
+      return '<div class="cal-day-row' + (hour >= LATE_HOUR ? " cal-late" : "") + '"><span>' + String(hour).padStart(2, "0") + ':00</span><div><button type="button" data-action="new-at" data-date="' + dateKey(this.date) + '" data-time="' + String(hour).padStart(2, "0") + ':00" aria-label="יצירת אירוע בשעה ' + hour + '"></button>' + items.map((item) => this.eventButton(item, false)).join("") + '</div></div>';
     }).join("");
     return '<div class="cal-day-view"><div class="cal-day-title"><b>' + escapeHtml(formatDay(this.date)) + '</b>' + this.areaLabel(this.date, "cal-area-inline") + '<span>' + this.visibleEvents(this.date).length + ' אירועים</span></div>' + (allDay.length ? '<div class="cal-all-day"><span>כל היום</span><div>' + allDay.map((item) => this.eventButton(item, false)).join("") + '</div></div>' : "") + rows + '</div>';
   }
@@ -362,13 +365,22 @@ class WorkCalendar {
     return '<div class="cal-overlay" data-action="backdrop"><section class="cal-dialog cal-editor" role="dialog" aria-modal="true" aria-labelledby="calDialogTitle"><div class="cal-dialog-head"><div><small>' + (edit ? "עדכון בלוח המשותף" : "הוספה ללוח המשותף") + '</small><h2 id="calDialogTitle">' + (edit ? "עריכת אירוע" : "אירוע חדש") + '</h2></div><button type="button" data-action="close" aria-label="סגירה">×</button></div><form id="calEventForm"><input type="hidden" name="id" value="' + (item ? escapeHtml(item.id) : "") + '"><label>שם האירוע<input required maxlength="120" name="title" value="' + (item ? escapeHtml(item.title) : "") + '" placeholder="לדוגמה: פגישת צוות"></label><div class="cal-form-row"><label>תאריך<input required type="date" name="date" value="' + date + '"></label><label class="cal-all-day"><input type="checkbox" name="allDay" ' + (item && item.allDay ? "checked" : "") + '> כל היום</label></div><div class="cal-form-row cal-times ' + (item && item.allDay ? "hidden" : "") + '"><label>שעת התחלה<input required type="time" name="startTime" value="' + start + '"' + timesOff + '></label><label>משך משוער<select name="duration"' + timesOff + '>' + durationChoices(duration).map((choice) => '<option value="' + choice.value + '" ' + (choice.selected ? "selected" : "") + '>' + choice.label + '</option>').join("") + '</select></label><p class="cal-end-time" data-end-time aria-live="polite">' + this.endTimeText(start, durationChoices(duration).find((choice) => choice.selected).value) + '</p></div><div class="cal-form-row"><label>מיקום<input maxlength="160" name="location" value="' + (item ? escapeHtml(item.location || "") : "") + '" placeholder="כתובת או קישור"></label><label>משימה מקושרת<select name="taskId">' + taskOptions + '</select></label></div><label>תיאור<textarea name="description" maxlength="1000" rows="2" placeholder="פרטים נוספים">' + (item ? escapeHtml(item.description || "") : "") + '</textarea></label><div class="cal-form-row"><label>תזכורת<select name="reminderMinutes"><option value="" ' + (!item || item.reminderMinutes == null ? "selected" : "") + '>ללא תזכורת</option><option value="5" ' + (item && item.reminderMinutes === 5 ? "selected" : "") + '>5 דקות לפני</option><option value="15" ' + (item && item.reminderMinutes === 15 ? "selected" : "") + '>15 דקות לפני</option><option value="30" ' + (item && item.reminderMinutes === 30 ? "selected" : "") + '>30 דקות לפני</option><option value="60" ' + (item && item.reminderMinutes === 60 ? "selected" : "") + '>שעה לפני</option><option value="1440" ' + (item && item.reminderMinutes === 1440 ? "selected" : "") + '>יום לפני</option></select></label><div></div></div><fieldset><legend>משתתפים מהצוות</legend><div class="cal-member-list">' + memberOptions + '</div></fieldset><div class="cal-form-error" role="status"></div><div class="cal-dialog-actions"><button class="cal-secondary" type="button" data-action="close">ביטול</button><button class="cal-primary" type="submit">' + (edit ? "שמירת שינויים" : "יצירת אירוע") + '</button></div></form></section></div>';
   }
 
+  endsLate(startAt, endAt) {
+    const limit = new Date(startAt);
+    limit.setHours(LATE_HOUR, 0, 0, 0);
+    return new Date(endAt) > limit;
+  }
+
   durationOf(item) {
     return Math.max(5, Math.round((new Date(item.endAt) - new Date(item.startAt)) / 60000));
   }
 
   endTimeText(start, duration) {
     const end = endTimeOf(start, duration);
-    return end ? "שעת סיום משוערת: <b>" + end.time + "</b>" + (end.nextDay ? " (למחרת)" : "") : "שעת הסיום תחושב לפי שעת ההתחלה והמשך.";
+    if (!end) return "שעת הסיום תחושב לפי שעת ההתחלה והמשך.";
+    const parts = String(start).split(":").map(Number);
+    const late = parts[0] * 60 + parts[1] + Number(duration) > LATE_HOUR * 60;
+    return "שעת סיום משוערת: <b>" + end.time + "</b>" + (end.nextDay ? " (למחרת)" : "") + (late ? '<span class="cal-late-note">האירוע מסתיים אחרי ' + LATE_HOUR + ":00. עדיף לא לעבור את השעה הזו.</span>" : "");
   }
 
   inputTime(value) {

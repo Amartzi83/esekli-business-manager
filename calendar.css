@@ -17,3 +17,14 @@ html[data-theme="dark"] .cal-area,html[data-theme="dark"] #calendarPage .cal-day
 /* The event's end is calculated from its start and estimated duration */
 .cal-end-time{grid-column:1/-1;margin:-3px 0 10px;color:var(--muted);font-size:12px}
 .cal-end-time b{color:var(--ink);font-size:14px}
+
+/* Soft red from 18:00: a warning not to run later */
+#calendarPage .cal-week-column .cal-hour-slot.cal-late,#calendarPage .cal-day-row.cal-late>div{background:rgba(229,72,77,.1)}
+#calendarPage .cal-week-column .cal-hour-slot.cal-late:hover,#calendarPage .cal-day-row.cal-late>div>button:first-child:hover{background:rgba(229,72,77,.18)}
+html[data-theme="dark"] #calendarPage .cal-week-column .cal-hour-slot.cal-late,html[data-theme="dark"] #calendarPage .cal-day-row.cal-late>div{background:rgba(240,120,120,.14)}
+html[data-theme="dark"] #calendarPage .cal-week-column .cal-hour-slot.cal-late:hover,html[data-theme="dark"] #calendarPage .cal-day-row.cal-late>div>button:first-child:hover{background:rgba(240,120,120,.22)}
+#calendarPage .cal-hour-rail span.cal-late,#calendarPage .cal-day-row.cal-late>span,#calendarPage .cal-list-row.cal-late .cal-list-time{color:#c9474b}
+html[data-theme="dark"] #calendarPage .cal-hour-rail span.cal-late,html[data-theme="dark"] #calendarPage .cal-day-row.cal-late>span,html[data-theme="dark"] #calendarPage .cal-list-row.cal-late .cal-list-time{color:#f39a9a}
+#calendarPage .cal-legend i.late{background:#e5484d}
+.cal-late-note{display:block;margin-top:5px;padding:7px 10px;border-radius:9px;background:rgba(229,72,77,.12);color:#b83a3e;font-size:12px;font-weight:650}
+html[data-theme="dark"] .cal-late-note{background:rgba(240,120,120,.16);color:#f8b4b4}

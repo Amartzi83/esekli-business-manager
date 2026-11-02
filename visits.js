@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf, roundDuration, durationLabel, durationChoices } from './scheduler.js?v=14';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf, roundDuration, durationLabel, durationChoices } from './scheduler.js?v=15';
 
 const root = document.getElementById('visits-root');
 if (root) {
