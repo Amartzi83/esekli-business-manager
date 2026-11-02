@@ -1,9 +1,12 @@
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs } from './scheduler.js?v=8';
+
 const root = document.getElementById('visits-root');
 if (root) {
   const STORAGE_KEY = 'esekli-garden-visits-v2';
   const LEGACY_KEY = 'esekli-garden-visits-v1';
   const DAY_KEY = 'esekli-workday-v1';
   const CUSTOMERS_KEY = 'esekli-customers-v1';
+  const CALENDAR_KEY = 'esekli-calendar-v1';
   const PHOTOS = [1,2,3,4,5,6,7,8].map(n => `./images/garden-${n}.jpg`);
   const DEFAULT_TASKS = ['כיסוח דשא','גיזום שיחים וגדר חיה','ניקוי עלים וגזם','בדיקת מערכת השקיה','דישון','פינוי גזם'];
   const SERVICES = ['תחזוקה חודשית','תחזוקה שבועית','תחזוקה דו שבועית','גיזום עונתי','שתילה ודישון','בדיקת השקיה','ביקור חד פעמי'];
@@ -12,13 +15,6 @@ if (root) {
     inProgress:{ label:'בתהליך', route:'התחיל ביקור', kind:'active', icon:'spark', hero:'ביקור פעיל' },
     completed:{ label:'הושלם', route:'הושלם', kind:'done', icon:'check', hero:'ביקור הושלם' },
     missed:{ label:'לא בוצע', route:'לא בוצע', kind:'missed', icon:'flag', hero:'לא בוצע' }
-  };
-  // Approximate city centres, used for the illustrated map and distance estimates.
-  const CITIES = {
-    'תל אביב':[32.0853,34.7818], 'רמת השרון':[32.1461,34.8394], 'הרצליה':[32.1663,34.8436], 'רעננה':[32.1848,34.8713],
-    'כפר סבא':[32.1750,34.9070], 'פתח תקווה':[32.0840,34.8878], 'רמת גן':[32.0684,34.8248], 'גבעתיים':[32.0722,34.8125],
-    'הוד השרון':[32.1500,34.8880], 'בני ברק':[32.0807,34.8338], 'חולון':[32.0158,34.7874], 'בת ים':[32.0171,34.7454],
-    'ראשון לציון':[31.9730,34.7925], 'נתניה':[32.3215,34.8532], 'ראש העין':[32.0956,34.9566], 'כפר יונה':[32.3167,34.9333]
   };
   const COAST = [[31.95,34.735],[32.0,34.745],[32.05,34.758],[32.1,34.774],[32.15,34.794],[32.2,34.81],[32.25,34.825],[32.3,34.845],[32.36,34.856]];
 
@@ -99,7 +95,12 @@ if (root) {
       visit('v-8', shiftDay(today,1), '10:00', 'גינת השקמים', 'לקוח פרטי', 'השקמים 5, הוד השרון', 45, 7, 'planned', 0),
       visit('v-9', shiftDay(today,2), '09:00', 'בית הדקל', 'ועד הבית', 'הנשיא 14, הרצליה', 60, 1, 'planned', 0),
       visit('v-10', shiftDay(today,-14), '11:00', 'ניצנות בית הדקל', 'חברת ניהול', 'הנדיב 8, הרצליה', 45, 2, 'completed', 6),
-      visit('v-11', shiftDay(today,-28), '10:30', 'ניצנות בית הדקל', 'חברת ניהול', 'הנדיב 8, הרצליה', 45, 2, 'completed', 6)
+      visit('v-11', shiftDay(today,-28), '10:30', 'ניצנות בית הדקל', 'חברת ניהול', 'הנדיב 8, הרצליה', 45, 2, 'completed', 6),
+      visit('v-12', shiftDay(today,4), '10:00', 'בניין המייסדים', 'לקוח פרטי', 'המייסדים 6, פתח תקווה', 60, 3, 'planned', 0),
+      visit('v-13', shiftDay(today,3), '08:00', 'גינת הים', 'לקוח פרטי', 'הירקון 40, תל אביב', 60, 4, 'planned', 0),
+      visit('v-14', shiftDay(today,3), '09:30', 'בית האורנים', 'ועד בית', 'האורנים 2, כפר סבא', 60, 5, 'planned', 0),
+      visit('v-15', shiftDay(today,3), '11:00', 'גינת הגפן', 'לקוח פרטי', 'הגפן 11, רמת גן', 60, 6, 'planned', 0),
+      visit('v-16', shiftDay(today,3), '12:30', 'חצר התמר', 'לקוח פרטי', 'התמר 7, רעננה', 60, 7, 'planned', 0)
     ];
   }
   function legacyVisits() {
@@ -161,31 +162,35 @@ if (root) {
   const progressOf = visit => visit.tasks.length ? Math.round(visit.tasks.filter(task => task.done).length / visit.tasks.length * 100) : 0;
   const nextVisit = list => list.find(visit => visit.status === 'inProgress') || list.find(visit => visit.status === 'planned');
 
-  function cityOf(visit) {
-    const name = Object.keys(CITIES).find(city => (visit.address || '').includes(city));
-    return name || null;
-  }
+  // Visits in an unrecognised city still need a spot on the map, so they get a stable made-up one.
   function coordsOf(visit) {
-    const city = cityOf(visit);
+    const known = coordsFor(visit.address, visit.name);
+    if (known) return known;
     let hash = 0;
     for (const character of `${visit.address}${visit.name}`) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-    const jitterLat = ((hash % 1000) / 1000 - .5) * .012;
-    const jitterLng = (((hash >> 10) % 1000) / 1000 - .5) * .012;
-    const [lat,lng] = city ? CITIES[city] : [32.11 + ((hash % 97) / 97 - .5) * .1, 34.84 + (((hash >> 7) % 89) / 89 - .5) * .1];
-    return [lat + jitterLat, lng + jitterLng];
+    return [32.11 + ((hash % 97) / 97 - .5) * .1, 34.84 + (((hash >> 7) % 89) / 89 - .5) * .1];
   }
   function distanceKm(list) {
+    const stops = list.filter(visit => visit.status !== 'missed');
     let total = 0;
-    for (let index = 1; index < list.length; index++) {
-      const [lat1,lng1] = coordsOf(list[index-1]);
-      const [lat2,lng2] = coordsOf(list[index]);
-      const dLat = (lat2-lat1) * Math.PI/180;
-      const dLng = (lng2-lng1) * Math.PI/180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-      total += 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-    return total * 1.35;
+    for (let index = 1; index < stops.length; index++) total += kmBetween(coordsOf(stops[index-1]), coordsOf(stops[index]));
+    return total;
   }
+
+  // Each team drives its own line, so routes and distances are worked out per team.
+  const teamsOn = date => [...new Set(dayVisits(date).map(visit => visit.team || ''))];
+  function routeTeam() {
+    const teams = teamsOn(state.date);
+    return teams.includes(state.routeTeam) ? state.routeTeam : teams[0] || '';
+  }
+  const routeList = () => dayVisits().filter(visit => (visit.team || '') === routeTeam());
+  const linePlan = (date, team) => planDay({ date, team, visits, events:calendarEvents() });
+  function planBanner(plan, showTeam) {
+    if (!plan?.worthwhile) return '';
+    const benefit = plan.savedKm >= 1 ? `אפשר לחסוך כ־${Math.round(plan.savedKm)} ק״מ` : 'אין מספיק זמן נסיעה בין הביקורים';
+    return `<button type="button" class="wl-plan-banner" data-action="open-plan" data-date="${safe(plan.date)}" data-team="${safe(plan.team)}">${icon('route')}<span><b class="wl-he">סדר נסיעה מומלץ${showTeam && plan.team ? ` · ${safe(plan.team)}` : ''}</b><small class="wl-he">${benefit} · ${plan.changes} ביקורים ישנו שעה${plan.overtimeMinutes ? ' · כולל חריגה משעות הבסיס' : ''}</small></span>${icon('right','wl-chev')}</button>`;
+  }
+  const lockMark = visit => visit.fixedTime ? '<span class="wl-lock" role="img" aria-label="שעה מתואמת" title="שעה מתואמת עם הלקוח">🔒</span>' : '';
 
   function rangeVisits() {
     const all = [...visits].sort(byTime);
@@ -230,7 +235,7 @@ if (root) {
     const done = list.filter(visit => visit.status === 'completed').length;
     const percent = list.length ? Math.round(done / list.length * 100) : 0;
     const hours = list.reduce((sum,visit) => sum + (Number(visit.duration) || 0), 0) / 60;
-    const km = [...new Set(list.map(visit => visit.date))].reduce((sum,date) => sum + distanceKm(list.filter(visit => visit.date === date)), 0);
+    const km = [...new Set(list.map(visit => `${visit.date}|${visit.team}`))].reduce((sum,line) => sum + distanceKm(list.filter(visit => `${visit.date}|${visit.team}` === line)), 0);
     const teams = new Set(list.map(visit => visit.team).filter(Boolean)).size;
     const clients = [...new Set(visits.map(visit => visit.client).filter(Boolean))].map(value => [value,value]);
     const teamOptions = [...new Set(visits.map(visit => visit.team).filter(Boolean))].map(value => [value,value]);
@@ -250,12 +255,13 @@ if (root) {
       </div>
       <div class="wl-progress"><b>${percent}%</b><span class="wl-bar"><i style="width:${percent}%"></i></span><span class="wl-he">הושלמו ${done}/${list.length}</span></div>
       <div class="wl-filters"><button type="button" class="wl-square ${state.status || state.client || state.team ? 'on' : ''}" data-action="clear-filters" aria-label="ניקוי סינון">${icon('filter')}</button>${select('team','כל הצוותים',teamOptions,state.team)}${select('client','כל הלקוחות',clients,state.client)}${select('status','סטטוס',Object.entries(STATUS).map(([key,meta]) => [key,meta.label]),state.status)}<button type="button" class="wl-square ${state.compact ? 'on' : ''}" data-action="compact" aria-label="תצוגה מצומצמת">${icon('expand')}</button></div>
+      ${state.range === 'day' ? teamsOn(state.date).map(team => planBanner(linePlan(state.date, team), teamsOn(state.date).length > 1)).join('') : ''}
       <div class="wl-list">${rows}</div>
       <div class="wl-dock"><button type="button" class="wl-cta" data-action="start-day">${icon('play')}<span class="wl-he">${started ? 'המשך יום עבודה' : 'התחל יום עבודה'}</span></button></div>
     </div>`;
   }
   function lineRow(visit) {
-    return `<button type="button" class="wl-row" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-time">${safe(visit.time)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-he">${safe(visit.client)} | ${safe(visit.service)}</span><span class="wl-addr">${icon('pin')}<span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit)}${icon('right','wl-chev')}</button>`;
+    return `<button type="button" class="wl-row" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-time">${safe(visit.time)}${lockMark(visit)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-he">${safe(visit.client)} | ${safe(visit.service)}</span><span class="wl-addr">${icon('pin')}<span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit)}${icon('right','wl-chev')}</button>`;
   }
 
   // Screen 2 — daily route
@@ -288,8 +294,8 @@ if (root) {
       [[31.98,34.94],[32.08,34.945],[32.18,34.95],[32.32,34.96]]
     ].map(coords => `<path d="${path(coords)}"/>`).join('');
     const sea = `${path(COAST)} L ${project(COAST[COAST.length-1])[0] - 600} ${project(COAST[COAST.length-1])[1]} L ${project(COAST[0])[0] - 600} ${project(COAST[0])[1]} Z`;
-    const labels = Object.entries(CITIES).map(([name,coords]) => {
-      const [x,y] = project(coords);
+    const labels = MAP_CITIES.map(name => {
+      const [x,y] = project(CITIES[name]);
       return x > -40 && x < W + 40 && y > 0 && y < H + 30 ? `<text x="${x.toFixed(1)}" y="${(y + 17).toFixed(1)}">${safe(name)}</text>` : '';
     }).join('');
     const pinXY = pts.map(project);
@@ -298,7 +304,7 @@ if (root) {
       const [x,y] = pinXY[index];
       return `<g class="wl-pin ${visit === next ? 'next' : ''} ${visit.status}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M0 0C-4-6-11-11-11-19a11 11 0 1 1 22 0C11-11 4-6 0 0Z"/><text y="-15.5">${index+1}</text></g>`;
     }).join('');
-    const line = pinXY.map(([x,y],index) => `${index ? 'L' : 'M'}${x.toFixed(1)} ${(y - 19).toFixed(1)}`).join(' ');
+    const line = pinXY.filter((point,index) => list[index].status !== 'missed').map(([x,y],index) => `${index ? 'L' : 'M'}${x.toFixed(1)} ${(y - 19).toFixed(1)}`).join(' ');
     // "meet" keeps every pin visible; the background layers extend past the viewBox to fill any extra space.
     return `<svg class="wl-map-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="מפת מסלול הביקורים">
       <defs><filter id="wlTexture" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" seed="4"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .28  0 0 0 0 .22  0 0 0 .55 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
@@ -314,18 +320,24 @@ if (root) {
     </svg>`;
   }
   function routeScreen() {
-    const list = dayVisits();
+    const list = routeList();
+    const team = routeTeam();
+    const teams = teamsOn(state.date);
+    const legs = routeLegs(list);
     const done = list.filter(visit => visit.status === 'completed').length;
     const km = distanceKm(list);
-    const minutes = list.reduce((sum,visit) => sum + (Number(visit.duration) || 0), 0) + km / 35 * 60;
+    const minutes = list.filter(visit => visit.status !== 'missed').reduce((sum,visit) => sum + (Number(visit.duration) || 0), 0) + km / 35 * 60;
     const next = nextVisit(list);
     const rows = list.length ? list.map((visit,index) => {
       const meta = STATUS[visit.status] || STATUS.planned;
-      return `<button type="button" class="wl-row wl-route-row ${visit === next ? 'is-next' : ''}" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-num ${meta.kind}">${index+1}</span><span class="wl-time">${safe(visit.time)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-addr"><span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit,'route')}${icon('right','wl-chev')}</button>`;
+      const leg = legs[visit.id];
+      const legRow = leg ? `<div class="wl-leg ${leg.tight ? 'tight' : ''}">${icon('car')}<span class="wl-he">${leg.minutes} דק׳ נסיעה${leg.km == null ? '' : ` · כ־${Math.max(1, Math.round(leg.km))} ק״מ`}${leg.tight ? ' · אין מספיק זמן' : ''}</span></div>` : '';
+      return `${legRow}<button type="button" class="wl-row wl-route-row ${visit === next ? 'is-next' : ''}" data-action="open-visit" data-id="${safe(visit.id)}"><span class="wl-num ${meta.kind}">${index+1}</span><span class="wl-time">${safe(visit.time)}${lockMark(visit)}</span><img class="wl-thumb" src="${photoUrl(visit)}" alt="" loading="lazy"><span class="wl-copy"><b class="wl-he">${safe(visit.name)}</b><span class="wl-addr"><span class="wl-he">${safe(visit.address)}</span></span></span>${statusPill(visit,'route')}${icon('right','wl-chev')}</button>`;
     }).join('') : '<div class="wl-empty wl-he">אין ביקורים ביום הזה.</div>';
     return `<div class="wl wl-route">
       <header class="wl-top"><button type="button" class="wl-icon-btn" data-action="back" aria-label="חזרה">${icon('left')}</button><div class="wl-title-stack"><h1>${icon('route','wl-green')}<span class="wl-he">מסלול יומי</span></h1><small class="wl-he">${safe(longDate(state.date))}</small></div><button type="button" class="wl-icon-btn" data-action="menu" aria-label="אפשרויות">${icon('dots')}</button></header>
       ${state.menu ? `<div class="wl-menu"><button type="button" data-action="edit-team" class="wl-he">עריכת שם הצוות</button><button type="button" data-action="edit-vehicle" class="wl-he">עריכת פרטי הרכב</button><button type="button" data-action="new-visit" class="wl-he">הוספת ביקור</button></div>` : ''}
+      ${teams.length > 1 ? `<div class="wl-team-tabs" role="tablist" aria-label="בחירת צוות">${teams.map(item => `<button type="button" role="tab" aria-selected="${item === team}" class="${item === team ? 'on' : ''}" data-action="route-team" data-team="${safe(item)}"><span class="wl-he">${safe(item || 'ללא צוות')}</span></button>`).join('')}</div>` : ''}
       <div class="wl-cards2">
         <div class="wl-card wl-team"><b class="wl-he">${safe(workday.team)}</b><div class="wl-avatars">${workday.members.map(member => `<span class="wl-avatar" title="${safe(member.name)}">${safe(member.initial)}</span>`).join('')}<button type="button" class="wl-avatar add" data-action="add-member" aria-label="הוספת איש צוות">${icon('plus')}</button></div></div>
         <div class="wl-card wl-vehicle">${carSvg()}<span><b class="wl-he">${safe(workday.vehicle.label)}</b><span class="wl-he">${safe(workday.vehicle.model)}</span><span>${safe(workday.vehicle.plate)}</span></span></div>
@@ -341,6 +353,7 @@ if (root) {
         <div class="wl-tile">${icon('sprout','wl-green')}<span><small class="wl-he">מספר גינות</small><b>${list.length}</b></span></div>
         <div class="wl-tile">${icon('listCheck','wl-green')}<span><small class="wl-he">בוצעו</small><b>${done}/${list.length}</b></span></div>
       </div>
+      ${planBanner(linePlan(state.date, team), false)}
       <div class="wl-list">${rows}</div>
       <div class="wl-dock wl-dock4"><button type="button" class="wl-tool" data-action="end-day">${icon('stop')}<span class="wl-he">סיום יום</span></button><button type="button" class="wl-tool danger" data-action="issue">${icon('warning')}<span class="wl-he">תקלה</span></button><button type="button" class="wl-tool" data-action="note">${icon('comment')}<span class="wl-he">הערה</span></button><button type="button" class="wl-cta" data-action="navigate-next" ${next ? '' : 'disabled'}>${icon('nav')}<span class="wl-he">ניווט לגינה הבאה</span></button></div>
     </div>`;
@@ -472,19 +485,75 @@ if (root) {
       <label class="v-field">שם הגינה / האתר<input name="name" maxlength="70" value="${safe(value.name)}" placeholder="למשל: גינת רמות" required></label>
       <div class="v-form-row"><label class="v-field">לקוח<input name="client" maxlength="60" value="${safe(value.client)}" placeholder="חברת ניהול / לקוח פרטי" required></label><label class="v-field">סוג שירות<select name="service">${services.map(service => `<option ${service === value.service ? 'selected' : ''}>${safe(service)}</option>`).join('')}</select></label></div>
       <label class="v-field">כתובת (רחוב, מספר, עיר)<input name="address" maxlength="100" value="${safe(value.address)}" placeholder="הרצל 12, תל אביב" required></label>
+      <div class="v-form-row"><label class="v-field">משך ביקור משוער (דקות)<input name="duration" type="number" min="10" max="600" step="5" value="${safe(value.duration)}" required></label><label class="v-field">צוות<input name="team" maxlength="40" value="${safe(value.team)}"></label></div>
+      <section class="wl-suggest" data-suggestions aria-live="polite"></section>
       <div class="v-form-row"><label class="v-field">תאריך<input name="date" type="date" value="${safe(value.date)}" required></label><label class="v-field">שעה<input name="time" type="time" value="${safe(value.time)}" required></label></div>
-      <div class="v-form-row"><label class="v-field">זמן מתוכנן (דקות)<input name="duration" type="number" min="10" max="600" value="${safe(value.duration)}" required></label><label class="v-field">צוות<input name="team" maxlength="40" value="${safe(value.team)}"></label></div>
+      <p class="wl-slot-warning" data-slot-warning hidden></p>
+      <label class="wl-lock-field"><input type="checkbox" name="fixedTime" ${value.fixedTime ? 'checked' : ''}><span>🔒 שעה מתואמת עם הלקוח (לא תזוז בסידור המסלול)</span></label>
       <label class="v-field">טלפון של הלקוח<input name="phone" type="tel" maxlength="20" value="${safe(value.phone)}" placeholder="050-0000000" dir="ltr"></label>
       <label class="v-field">הערה לצוות<textarea name="notes" maxlength="300" placeholder="דגשים לביקור">${safe(value.notes)}</textarea></label>
       <div class="v-dialog-actions"><button class="v-button primary" type="submit">${visit ? 'שמירה' : 'הוספת ביקור'}</button><button class="v-button" type="button" data-close>ביטול</button></div></form>`;
     dialog.dataset.editing = visit?.id || '';
+    updateSuggestions();
     dialog.showModal();
   }
-  dialog.addEventListener('click', event => { if (event.target === dialog || event.target.closest('[data-close]')) dialog.close(); });
+
+  // Suggests the days where this visit adds the least driving, using work lines and the calendar.
+  function calendarEvents() {
+    try { const stored = JSON.parse(localStorage.getItem(CALENDAR_KEY) || '[]'); return Array.isArray(stored) ? stored : []; } catch { return []; }
+  }
+  const suggestionDay = date => {
+    const today = todayKey();
+    const name = date === today ? 'היום' : date === shiftDay(today,1) ? 'מחר' : null;
+    const format = new Intl.DateTimeFormat('he-IL',{ weekday:'long', day:'numeric', month:'numeric' }).format(fromKey(date));
+    return name ? `${name}, ${format}` : format;
+  };
+  function suggestionReason(slot, city) {
+    if (!slot.nearest || slot.extraKm == null) return slot.stops ? 'יש ביום הזה זמן פנוי, אך בלי ביקור שאפשר להצטרף אליו באזור' : 'יום פנוי — נסיעה ייעודית';
+    const place = slot.nearest.sameCity ? `כבר בתוכנית ב${city}` : `קרוב ל${slot.nearest.city || slot.nearest.label} (כ־${Math.max(1, Math.round(slot.nearest.km))} ק״מ)`;
+    return `${place}: ${slot.nearest.label} ב־${slot.nearest.time}`;
+  }
+  function updateSuggestions() {
+    const form = dialog.querySelector('[data-visit-form]');
+    const box = dialog.querySelector('[data-suggestions]');
+    if (!form || !box) return;
+    const values = Object.fromEntries(new FormData(form));
+    const context = { team:values.team.trim(), visits, events:calendarEvents(), excludeId:dialog.dataset.editing || null };
+    const address = values.address.trim();
+    const result = suggestSlots({ address, name:values.name.trim(), duration:values.duration, ...context });
+    const head = `<div class="wl-suggest-head">${icon('sparkles')}<b>מועד מומלץ לפי אזור</b></div>`;
+    if (!address) box.innerHTML = `${head}<p>הזינו כתובת ומשך משוער, ונציע מתי לשלב את הביקור כדי לחסוך נסיעות.</p>`;
+    else if (!result.city) box.innerHTML = `${head}<p>לא זיהינו עיר בכתובת. כתבו את שם העיר בסוף הכתובת, למשל: הרצל 12, פתח תקווה.</p>`;
+    else if (!(Number(values.duration) > 0)) box.innerHTML = `${head}<p>הזינו משך ביקור משוער כדי לקבל הצעה.</p>`;
+    else if (!result.suggestions.length) box.innerHTML = `${head}<p>לא נמצא חלון פנוי באורך הזה ב־3 השבועות הקרובים. אפשר לקצר את המשך או לבחור מועד ידנית.</p>`;
+    else box.innerHTML = `${head}<div class="wl-suggest-list">${result.suggestions.map((slot, index) => {
+      const selected = slot.date === values.date && slot.time === values.time;
+      const cost = slot.extraKm == null ? '' : slot.extraKm < 1 ? 'כמעט בלי נסיעה נוספת' : `תוספת נסיעה: כ־${Math.round(slot.extraKm)} ק״מ`;
+      const overtime = slot.overtimeMinutes ? `חריגה של ${slot.overtimeMinutes} דק׳ משעות הבסיס` : '';
+      return `<button type="button" class="wl-suggestion ${selected ? 'on' : ''}" data-suggest-date="${safe(slot.date)}" data-suggest-time="${safe(slot.time)}" aria-pressed="${selected}"><span class="wl-suggestion-top"><b>${safe(suggestionDay(slot.date))}</b>${index === 0 && slot.extraKm != null ? '<small class="wl-best">מומלץ</small>' : ''}<strong>${safe(slot.time)}–${safe(slot.endTime)}</strong></span><span>${safe(suggestionReason(slot, result.city))}</span><small>${[overtime, cost, slot.stops ? (slot.stops === 1 ? 'פריט אחד ביומן ביום זה' : `${slot.stops} פריטים ביומן ביום זה`) : ''].filter(Boolean).join(' · ')}</small></button>`;
+    }).join('')}</div><p class="wl-suggest-note">ההערכה לפי מרחק בין ערים. שעות הבסיס: א׳–ה׳ 07:30–18:00, ו׳ עד 13:00. כשאין מקום מוצעת גם חריגה קטנה.</p>`;
+
+    const warning = dialog.querySelector('[data-slot-warning]');
+    const check = checkSlot({ date:values.date, time:values.time, duration:values.duration, ...context });
+    const message = !check ? '' : check.overlap ? `המועד הזה חופף ל"${check.overlap.label}" (${check.overlap.start}–${check.overlap.end}).` : check.closed ? 'המועד הזה יוצא בשבת. אפשר לשמור בכל זאת.' : check.outsideHours ? `המועד הזה חורג משעות הבסיס (${check.baseHours}). אפשר לשמור בכל זאת.` : '';
+    warning.textContent = message;
+    warning.hidden = !message;
+  }
+  let suggestTimer;
+  dialog.addEventListener('input', () => { clearTimeout(suggestTimer); suggestTimer = setTimeout(updateSuggestions, 250); });
+  dialog.addEventListener('click', event => {
+    if (event.target === dialog || event.target.closest('[data-close]')) { dialog.close(); return; }
+    const suggestion = event.target.closest('[data-suggest-date]');
+    if (!suggestion) return;
+    const form = dialog.querySelector('[data-visit-form]');
+    form.elements.date.value = suggestion.dataset.suggestDate;
+    form.elements.time.value = suggestion.dataset.suggestTime;
+    updateSuggestions();
+  });
   dialog.addEventListener('submit', event => {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.target));
-    const fields = { name:values.name.trim(), client:values.client.trim(), service:values.service, address:values.address.trim(), date:values.date, time:values.time, duration:Number(values.duration) || 60, team:values.team.trim() || 'צוות 1', phone:values.phone.trim(), notes:values.notes.trim() };
+    const fields = { name:values.name.trim(), client:values.client.trim(), service:values.service, address:values.address.trim(), date:values.date, time:values.time, duration:Number(values.duration) || 60, team:values.team.trim() || 'צוות 1', phone:values.phone.trim(), notes:values.notes.trim(), fixedTime:values.fixedTime === 'on' };
     const existing = dialog.dataset.editing && byId(dialog.dataset.editing);
     if (existing) Object.assign(existing, fields);
     else {
@@ -496,26 +565,36 @@ if (root) {
     toast(existing ? 'פרטי הביקור עודכנו.' : 'הביקור נוסף לקו העבודה.');
   });
 
+  // The proposed order is only applied after approval, because it changes visit times.
+  const planDialog = document.createElement('dialog');
+  planDialog.className = 'v-dialog wl-dialog wl-plan-dialog';
+  document.body.append(planDialog);
+  let openedPlan = null;
+  function openPlan(date, team) {
+    const plan = linePlan(date, team);
+    if (!plan?.worthwhile) { render(); toast('הסדר הנוכחי כבר הגיוני.'); return; }
+    openedPlan = plan;
+    const when = new Intl.DateTimeFormat('he-IL',{ weekday:'long', day:'numeric', month:'long' }).format(fromKey(date));
+    planDialog.innerHTML = `<div class="wl-plan"><h2>סדר נסיעה מומלץ</h2><p>${safe(when)}${team ? ` · ${safe(team)}` : ''}</p>
+      <div class="wl-plan-km"><span><small>עכשיו</small><b>כ־${Math.round(plan.currentKm)} ק״מ</b></span><span aria-hidden="true">←</span><span class="after"><small>בסדר המוצע</small><b>כ־${Math.round(plan.plannedKm)} ק״מ</b></span></div>
+      <ol class="wl-plan-list">${plan.stops.map(stop => `<li class="${stop.moved ? 'moved' : ''}"><b>${safe(stop.label)}</b><span>${stop.locked ? '🔒 ' : ''}${stop.moved ? `<s>${safe(stop.oldTime)}</s> ← <strong>${safe(stop.time)}</strong>` : `${safe(stop.time)} · ללא שינוי`}</span></li>`).join('')}</ol>
+      ${plan.overtimeMinutes ? `<p class="wl-slot-warning">היום יסתיים ${plan.overtimeMinutes} דק׳ אחרי שעות הבסיס (${safe(plan.baseClose)}).</p>` : ''}
+      <p class="wl-plan-note">ביקורים שהושלמו, ביקור פעיל, ביקורים עם שעה מתואמת ואירועי יומן לא זזים. המרחקים הם הערכה לפי ערים.</p>
+      <div class="v-dialog-actions"><button type="button" class="v-button primary" data-plan-apply>החלת הסדר</button><button type="button" class="v-button" data-plan-close>ביטול</button></div></div>`;
+    planDialog.showModal();
+  }
+  planDialog.addEventListener('click', event => {
+    if (event.target === planDialog || event.target.closest('[data-plan-close]')) { planDialog.close(); return; }
+    if (!event.target.closest('[data-plan-apply]') || !openedPlan) return;
+    openedPlan.stops.filter(stop => stop.moved).forEach(stop => { const visit = byId(stop.id); if (visit) visit.time = stop.time; });
+    const saved = Math.round(openedPlan.savedKm);
+    save(); planDialog.close(); render();
+    toast(`הסדר עודכן${saved >= 1 ? `, נחסכו כ־${saved} ק״מ` : ''}. כדאי לעדכן לקוחות ששעת הביקור שלהם השתנתה.`);
+  });
   function optimizeRoute() {
-    const list = dayVisits();
-    const fixed = list.filter(visit => visit.status === 'completed' || visit.status === 'inProgress');
-    const open = list.filter(visit => visit.status === 'planned');
-    if (open.length < 2) { toast('אין מספיק ביקורים ממתינים למיטוב.'); return; }
-    const before = distanceKm(list);
-    const slots = open.map(visit => visit.time).sort();
-    let current = fixed.length ? fixed[fixed.length-1] : open[0];
-    const ordered = [];
-    const remaining = [...open];
-    if (!fixed.length) { ordered.push(remaining.shift()); }
-    while (remaining.length) {
-      const from = ordered.length ? ordered[ordered.length-1] : current;
-      remaining.sort((a,b) => distanceKm([from,a]) - distanceKm([from,b]));
-      ordered.push(remaining.shift());
-    }
-    ordered.forEach((visit,index) => { visit.time = slots[index]; });
-    const after = distanceKm(dayVisits());
-    save(); render();
-    toast(after < before - .5 ? `המסלול עודכן · נחסכו כ־${Math.round(before - after)} ק״מ` : 'המסלול כבר בסדר האופטימלי.');
+    const plan = linePlan(state.date, routeTeam());
+    if (plan?.worthwhile) { openPlan(plan.date, plan.team); return; }
+    toast(plan?.unscheduled.length ? 'לא נכנסים כל הביקורים בשעות העבודה של היום הזה.' : 'הסדר הנוכחי כבר הגיוני.');
   }
   const mapsUrl = address => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=driving`;
   const openExternal = url => window.open(url,'_blank','noopener,noreferrer');
@@ -568,12 +647,14 @@ if (root) {
     if (!target || target.disabled) return;
     const action = target.dataset.action;
     const visit = byId(state.visitId);
-    const today = dayVisits();
+    const today = state.view === 'route' ? routeList() : dayVisits();
     const current = nextVisit(today);
     if (action !== 'menu') state.menu = false;
 
     switch (action) {
       case 'open-menu': window.openAppMenu?.(); return;
+      case 'open-plan': openPlan(target.dataset.date, target.dataset.team); return;
+      case 'route-team': state.routeTeam = target.dataset.team; render(); return;
       case 'menu': state.menu = !state.menu; render(); return;
       case 'new-visit': state.menu = false; openVisitDialog(); render(); return;
       case 'range': state.range = target.dataset.range; render(); return;
