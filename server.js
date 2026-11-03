@@ -20,6 +20,7 @@ const assetRoutes = new Map([
   ['/customers.js', { file: './customers.js', type: 'text/javascript; charset=utf-8' }],
   ['/lists.css', { file: './lists.css', type: 'text/css; charset=utf-8' }],
   ['/scheduler.js', { file: './scheduler.js', type: 'text/javascript; charset=utf-8' }],
+  ['/sections.css', { file: './sections.css', type: 'text/css; charset=utf-8' }],
   ['/mz-empire-logo.jpg', { file: './mz-empire-logo.jpg', type: 'image/jpeg' }]
 ]);
 
