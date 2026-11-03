@@ -256,6 +256,8 @@ if (root) {
     try { const stored = JSON.parse(event.newValue || '[]'); if (Array.isArray(stored)) { tasks = stored; render(); } } catch {}
   });
 
+  window.esekliStore?.onRemote(STORAGE_KEY, () => { tasks = window.esekliStore.read(STORAGE_KEY) || []; }, render);
+
   save();
   render();
 }

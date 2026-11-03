@@ -316,6 +316,10 @@ if (root) {
   });
   document.getElementById('searchInput')?.addEventListener('input', () => { if (!root.closest('[hidden]')) { state.selectedId = null; render(); } });
 
+  window.esekliStore?.onRemote(STORAGE_KEY, () => { customers = window.esekliStore.read(STORAGE_KEY) || []; }, () => { render(); refreshPhotos(); });
+  window.esekliStore?.onRemote(VISITS_KEY, null, render);
+  document.addEventListener('esekli:photos-changed', refreshPhotos);
+
   save();
   render();
   refreshPhotos();

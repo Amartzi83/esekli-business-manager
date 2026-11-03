@@ -1,4 +1,4 @@
-import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=17";
+import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=19";
 
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
@@ -87,11 +87,13 @@ function makeDemoApi(organization, members, currentUser) {
     else localStorage.setItem(CALENDAR_KEY, JSON.stringify(events));
   }
   saveEvents();
+  const reloadEvents = () => { events = loadEvents() || []; };
   const taskMap = demoTasks.map((task) => Object.assign({}, task, { organizationId: organization.id }));
   function mayEdit(record) {
     return currentUser.role === "admin" || record.createdById === currentUser.id;
   }
   return {
+    reload: reloadEvents,
     async listEvents(query) {
       if (query.organizationId !== organization.id) throw new Error("אין גישה לארגון הזה");
       const from = new Date(query.startAt).getTime();
@@ -159,6 +161,8 @@ class WorkCalendar {
     this.root.addEventListener("input", this.inputHandler);
     // Visits are edited on another screen, so the work areas are refreshed when the calendar opens.
     document.addEventListener("click", (event) => { if (event.target.closest('[data-nav="calendar"]')) this.refresh(); });
+    window.esekliStore?.onRemote(CALENDAR_KEY, () => this.api.reload?.(), () => this.refresh());
+    window.esekliStore?.onRemote("esekli-garden-visits-v2", null, () => this.render());
     await this.refresh();
   }
 

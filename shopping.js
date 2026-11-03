@@ -157,6 +157,8 @@ if (root) {
   });
   document.getElementById('searchInput')?.addEventListener('input', () => { if (!root.closest('[hidden]')) render(); });
 
+  window.esekliStore?.onRemote(STORAGE_KEY, () => { items = window.esekliStore.read(STORAGE_KEY) || []; }, render);
+
   save();
   render();
 }

@@ -156,9 +156,10 @@ function summaryText(summary) {
 }
 
 // Queued, so it runs after startup has loaded the last recorded value of each collection.
-function record(key, raw, reason = '') {
+function record(key, raw, reason = '', remote = false) {
   if (!byKey[key]) return;
   const at = Date.now();
+  if (!remote) window.esekliCloud?.push(key, raw);
   enqueue(() => saveEntry(key, raw, reason, at));
   scheduleBackupCheck();
 }
@@ -269,6 +270,7 @@ async function restoreCollections(collections, reason) {
     record(key, raw, reason);
   });
   await queue;
+  await window.esekliCloud?.flush();
 }
 async function restoreItem(key, item, reason) {
   const collection = byKey[key];
@@ -280,6 +282,7 @@ async function restoreItem(key, item, reason) {
   if (index >= 0) list[index] = item; else list.push(item);
   write(key, list, reason);
   await queue;
+  await window.esekliCloud?.flush();
 }
 
 // History queries -------------------------------------------------------
@@ -322,13 +325,24 @@ async function restorePhoto(id) {
   const { deletedAt, ...original } = photo;
   await run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').put(original));
   await run(historyDb(), 'photoTrash', 'readwrite', tx => tx.objectStore('photoTrash').delete(id));
+  photoChanged('put', original);
 }
 const listPhotos = () => getAll(photoDb(), 'photos');
-const savePhoto = photo => run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').put(photo));
+const photoChanged = (op, photo) => window.esekliCloud?.photo(op, photo);
+async function savePhoto(photo) {
+  await run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').put(photo));
+  photoChanged('put', photo);
+}
+// A photo added or removed by another user: saved here without being sent back.
+async function receivePhoto(op, photo) {
+  await run(photoDb(), 'photos', 'readwrite', tx => { if (op === 'delete') tx.objectStore('photos').delete(photo.id); else tx.objectStore('photos').put(photo); });
+  document.dispatchEvent(new CustomEvent('esekli:photos-changed'));
+}
 // Moves a photo to the bin, so it can still be restored from the history screen.
 async function removePhoto(photo) {
   await trashPhoto(photo);
   await run(photoDb(), 'photos', 'readwrite', tx => tx.objectStore('photos').delete(photo.id));
+  photoChanged('delete', photo);
 }
 async function purgeTrash() {
   const old = (await listTrash()).filter(photo => Date.now() - photo.deletedAt > TRASH_DAYS * DAY);
@@ -364,7 +378,10 @@ async function readBackupFile(file) {
 }
 async function importBackup({ collections, photos }) {
   await restoreCollections(collections, 'ייבוא קובץ גיבוי');
-  if (photos.length) await run(photoDb(), 'photos', 'readwrite', tx => photos.forEach(photo => tx.objectStore('photos').put(photo)));
+  if (photos.length) {
+    await run(photoDb(), 'photos', 'readwrite', tx => photos.forEach(photo => tx.objectStore('photos').put(photo)));
+    photos.forEach(photo => photoChanged('put', photo));
+  }
 }
 
 // Startup: record a baseline for data that has no history yet, and catch up on
@@ -392,10 +409,26 @@ window.addEventListener('storage', event => {
   if (byKey[event.key]) lastRaw[event.key] = event.newValue;
 });
 
+// Changes from other users. The module's data refreshes at once, so a local save can never
+// overwrite them; the screen redraws when the user is not in the middle of typing or a dialog.
+const remoteListeners = {};
+const isBusy = () => document.querySelector('dialog[open], .cal-overlay') || document.activeElement?.matches?.('main input, main textarea, main select');
+function renderWhenFree(render) {
+  if (isBusy()) setTimeout(() => renderWhenFree(render), 1500);
+  else render();
+}
+function onRemote(key, refresh, render) {
+  (remoteListeners[key] ||= []).push({ refresh, render });
+}
+function receiveRemote(key, raw) {
+  record(key, raw, 'עדכון ממשתמש אחר', true);
+  (remoteListeners[key] || []).forEach(listener => { listener.refresh?.(); if (listener.render) renderWhenFree(listener.render); });
+}
+
 window.esekliStore = {
   COLLECTIONS, FIELD_LABELS, LAST_EXPORT_KEY, ready, write, read, parse:(key, raw) => parse(byKey[key], raw), collection:key => byKey[key],
   summaryText, listChanges, snapshotOf, stateAt, itemHistory, counts,
   createBackup:async (kind, note) => { await queue; return createBackup(kind, note); }, listBackups, restoreCollections, restoreItem,
-  trashPhoto, listTrash, restorePhoto, listPhotos, savePhoto, removePhoto, exportFile, readBackupFile, importBackup,
+  trashPhoto, listTrash, restorePhoto, listPhotos, savePhoto, removePhoto, photoChanged, receivePhoto, onRemote, receiveRemote, exportFile, readBackupFile, importBackup,
   flush:() => queue
 };

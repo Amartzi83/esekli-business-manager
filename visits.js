@@ -1,4 +1,4 @@
-import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf, roundDuration, durationLabel, durationChoices } from './scheduler.js?v=17';
+import { CITIES, MAP_CITIES, coordsFor, kmBetween, suggestSlots, checkSlot, planDay, routeLegs, workAreas, endTimeOf, roundDuration, durationLabel, durationChoices } from './scheduler.js?v=19';
 
 const root = document.getElementById('visits-root');
 if (root) {
@@ -423,7 +423,25 @@ if (root) {
     return `${[...sample, ...uploaded].join('')}<button type="button" class="wl-add-photo" data-action="add-photo">${icon('plus')}<span class="wl-he">הוסף תמונות</span></button>`;
   }
 
+  // The dashboard's "today" card and counter.
+  function renderDashboard() {
+    const list = document.getElementById('dashboardVisits');
+    if (!list) return;
+    const today = dayVisits(todayKey()).filter(visit => visit.status !== 'missed');
+    const empty = list.querySelector('[data-empty]');
+    list.querySelectorAll('.event').forEach(row => row.remove());
+    list.insertAdjacentHTML('afterbegin', today.slice(0, 4).map(visit => `<div class="event" data-search="${safe(`${visit.name} ${visit.service} ${visit.address}`)}"><div class="event-time">${safe(visit.time)}</div><span class="event-dot"></span><div><div class="event-title">${safe(visit.service)} — ${safe(visit.name)}</div><div class="event-meta">${safe(visit.address)}</div></div><span class="event-tag">${(STATUS[visit.status] || STATUS.planned).label}</span></div>`).join(''));
+    if (empty) list.append(empty);
+    window.applySearch?.();
+    const next = nextVisit(today);
+    const count = document.getElementById('visitsTodayCount');
+    if (count) count.textContent = today.length;
+    const foot = document.getElementById('visitsNext');
+    if (foot) foot.innerHTML = next ? `הביקור הבא ב־<span class="up">${safe(next.time)}</span>` : 'אין ביקורים ממתינים';
+  }
+
   function render() {
+    renderDashboard();
     customersCache = readCustomers();
     const visit = state.view === 'visit' && byId(state.visitId);
     if (state.view === 'visit' && !visit) state.view = 'lines';
@@ -632,7 +650,11 @@ if (root) {
     if (target.matches('[data-photo-input]') && visit) {
       const files = [...(target.files || [])].filter(file => file.type.startsWith('image/'));
       for (const file of files) {
-        try { await photoOperation('put',{ id:uid(visit.id), visitId:visit.id, data:await resizeImage(file), createdAt:Date.now() }); }
+        try {
+          const photo = { id:uid(visit.id), visitId:visit.id, data:await resizeImage(file), createdAt:Date.now() };
+          await photoOperation('put', photo);
+          window.esekliStore?.photoChanged('put', photo);
+        }
         catch { toast('לא ניתן לשמור את התמונה במכשיר.'); break; }
       }
       target.value = '';
@@ -752,6 +774,7 @@ if (root) {
           const photo = (await photoOperation('getAll')).find(item => item.id === target.dataset.photo);
           if (photo) await window.esekliStore?.trashPhoto(photo);
           await photoOperation('delete', target.dataset.photo);
+          window.esekliStore?.photoChanged('delete', { id:target.dataset.photo });
           await loadPhotos(visit);
           toast('התמונה נמחקה. אפשר לשחזר אותה ממסך ההיסטוריה.');
         } catch { toast('לא ניתן למחוק את התמונה.'); }
@@ -795,6 +818,14 @@ if (root) {
   });
 
   document.addEventListener('esekli:customer-image', refreshCustomerImages);
+  document.addEventListener('esekli:photos-changed', refreshCustomerImages);
+  window.esekliStore?.onRemote(STORAGE_KEY, () => {
+    visits = window.esekliStore.read(STORAGE_KEY) || [];
+    visits.forEach(visit => { visit.duration = roundDuration(visit.duration); });
+  }, render);
+  window.esekliStore?.onRemote(DAY_KEY, () => { workday = window.esekliStore.read(DAY_KEY) || workday; }, render);
+  window.esekliStore?.onRemote(CUSTOMERS_KEY, null, refreshCustomerImages);
+  window.esekliStore?.onRemote(CALENDAR_KEY, null, render);
 
   save();
   render();
