@@ -1,5 +1,5 @@
 // Lets the installed app open without a connection. Shared data is handled by Firestore's own cache.
-const CACHE = 'esekli-v19';
+const CACHE = 'esekli-v20';
 const SHELL = ['./', './manifest.webmanifest', './mz-empire-logo.jpg', './icons/icon-192.png'];
 
 self.addEventListener('install', event => {

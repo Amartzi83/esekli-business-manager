@@ -1,3 +1,6 @@
+import { readSpreadsheet, toCsv, writeXlsx } from './spreadsheet.js?v=20';
+import { checkDuplicates, customersToRows, fillMissing, rowsToCustomers, sampleRows } from './customer-import.js?v=20';
+
 const root = document.getElementById('customers-root');
 if (root) {
   const STORAGE_KEY = 'esekli-customers-v1';
@@ -97,7 +100,7 @@ if (root) {
     const query = searchQuery();
     const tabs = [['active','פעילים',count.active],['lead','לידים',count.lead],['paused','מושהים',count.paused],['all','הכל',customers.length]];
     const list = customers.filter(customer => (state.filter === 'all' || customer.status === state.filter) && (!query || `${customer.name} ${customer.contact} ${customer.address} ${customer.type} ${customer.phone}`.toLocaleLowerCase('he').includes(query))).sort((a,b) => lastActivity(b) - lastActivity(a));
-    return `<header class="v-heading"><div class="v-title-wrap"><span class="v-mark x-mark cust" aria-hidden="true">👥</span><div><p class="v-eyebrow">ניהול קשרי לקוחות</p><h1>תיקי לקוחות</h1><p>פרטי קשר, חבילות שירות, ביקורים ויומן פעילות לכל לקוח</p></div></div><button class="v-button primary" type="button" data-action="new">＋ לקוח חדש</button></header>
+    return `<header class="v-heading x-heading-wrap"><div class="v-title-wrap"><span class="v-mark x-mark cust" aria-hidden="true">👥</span><div><p class="v-eyebrow">ניהול קשרי לקוחות</p><h1>תיקי לקוחות</h1><p>פרטי קשר, חבילות שירות, ביקורים ויומן פעילות לכל לקוח</p></div></div><div class="x-heading-actions"><button class="v-button" type="button" data-action="import">ייבוא</button><button class="v-button" type="button" data-action="export">ייצוא</button><button class="v-button primary" type="button" data-action="new">＋ לקוח חדש</button></div></header>
       <div class="v-stats"><div class="v-stat"><span class="v-stat-icon">👥</span><span><small>לקוחות פעילים</small><b>${count.active}</b></span></div><div class="v-stat"><span class="v-stat-icon">✦</span><span><small>לידים</small><b>${count.lead}</b></span></div><div class="v-stat"><span class="v-stat-icon">₪</span><span><small>הכנסה חודשית</small><b>${money(count.income)}</b></span></div><div class="v-stat"><span class="v-stat-icon">🌿</span><span><small>ביקורים החודש</small><b>${count.visitsMonth}</b></span></div></div>
       <div class="v-toolbar"><div class="v-tabs t-tabs" role="tablist">${tabs.map(([key,label,number]) => `<button type="button" role="tab" class="${state.filter === key ? 'selected' : ''}" aria-selected="${state.filter === key}" data-action="filter" data-filter="${key}">${label}<span class="t-tab-count">${number}</span></button>`).join('')}</div></div>
       <div class="t-list">${list.length ? list.map(customer => `<button type="button" class="t-item x-customer" data-action="open" data-id="${safe(customer.id)}">${avatar(customer)}<span class="t-body"><b>${safe(customer.name)}</b><span class="t-meta"><span>${safe(customer.type)}</span><i>·</i><span>${safe(customer.plan)}</span><i>·</i><span>${safe((customer.address || '').split(',').pop().trim())}</span>${customer.status !== 'active' ? `<i>·</i><span class="t-priority ${customer.status === 'lead' ? 'low' : ''}">${STATUS[customer.status]}</span>` : ''}</span></span><span class="x-side"><b>${customer.price ? `${money(customer.price)}<small>/חודש</small>` : ''}</b><small>${lastActivity(customer) ? safe(ago(lastActivity(customer))) : ''}</small></span></button>`).join('') : `<div class="v-empty">${query ? 'לא נמצאו לקוחות שמתאימים לחיפוש.' : 'אין לקוחות בקטגוריה הזו.'}</div>`}</div>
@@ -148,15 +151,17 @@ if (root) {
   const dialog = document.createElement('dialog');
   dialog.className = 'v-dialog';
   document.body.append(dialog);
+  // An imported customer can have a type or plan outside the usual lists, and editing must keep it.
+  const withCurrent = (options, current) => (current && !options.includes(current) ? [...options, current] : options);
   function openDialog(customer = null) {
     state.editingId = customer?.id || null;
     const value = customer || { name:'', type:TYPES[0], contact:'', phone:'', email:'', address:'', plan:PLANS[0], price:'', status:'lead', sites:[], since:new Date().toISOString().slice(0,10), notes:'' };
     dialog.innerHTML = `<form method="dialog" data-customer-form><h2>${customer ? 'עריכת לקוח' : 'לקוח חדש'}</h2>
-      <div class="v-form-row"><label class="v-field">שם הלקוח<input name="name" maxlength="60" value="${safe(value.name)}" required></label><label class="v-field">סוג<select name="type">${TYPES.map(type => `<option ${type === value.type ? 'selected' : ''}>${type}</option>`).join('')}</select></label></div>
+      <div class="v-form-row"><label class="v-field">שם הלקוח<input name="name" maxlength="60" value="${safe(value.name)}" required></label><label class="v-field">סוג<select name="type">${withCurrent(TYPES, value.type).map(type => `<option ${type === value.type ? 'selected' : ''}>${safe(type)}</option>`).join('')}</select></label></div>
       <div class="v-form-row"><label class="v-field">איש קשר<input name="contact" maxlength="50" value="${safe(value.contact)}"></label><label class="v-field">טלפון<input name="phone" type="tel" maxlength="20" dir="ltr" value="${safe(value.phone)}"></label></div>
       <div class="v-form-row"><label class="v-field">אימייל<input name="email" type="email" maxlength="80" dir="ltr" value="${safe(value.email)}"></label><label class="v-field">סטטוס<select name="status">${Object.entries(STATUS).map(([key,label]) => `<option value="${key}" ${key === value.status ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div>
       <label class="v-field">כתובת<input name="address" maxlength="100" value="${safe(value.address)}" placeholder="רחוב ומספר, עיר"></label>
-      <div class="v-form-row"><label class="v-field">חבילת שירות<select name="plan">${PLANS.map(plan => `<option ${plan === value.plan ? 'selected' : ''}>${plan}</option>`).join('')}</select></label><label class="v-field">מחיר חודשי (₪)<input name="price" type="number" min="0" step="10" value="${safe(value.price)}"></label></div>
+      <div class="v-form-row"><label class="v-field">חבילת שירות<select name="plan">${withCurrent(PLANS, value.plan).map(plan => `<option ${plan === value.plan ? 'selected' : ''}>${safe(plan)}</option>`).join('')}</select></label><label class="v-field">מחיר חודשי (₪)<input name="price" type="number" min="0" step="10" value="${safe(value.price)}"></label></div>
       <div class="v-form-row"><label class="v-field">שמות הגינות (מופרדים בפסיק)<input name="sites" maxlength="150" value="${safe((value.sites || []).join(', '))}"></label><label class="v-field">לקוח מאז<input name="since" type="date" value="${safe(value.since)}"></label></div>
       <label class="v-field">הערות<textarea name="notes" maxlength="300">${safe(value.notes)}</textarea></label>
       <div class="v-dialog-actions"><button class="v-button primary" type="submit">${customer ? 'שמירה' : 'הוספה'}</button><button class="v-button" type="button" data-close>ביטול</button>${customer ? '<button class="v-button t-delete" type="button" data-delete>מחיקה</button>' : ''}</div></form>`;
@@ -269,6 +274,138 @@ if (root) {
     } catch { toast('לא ניתן לשמור את התמונה במכשיר.'); }
   });
 
+  // Import and export. Nothing from a file is saved until the person has seen the duplicate check.
+  const transfer = document.createElement('dialog');
+  transfer.className = 'v-dialog x-picker x-transfer';
+  document.body.append(transfer);
+  const MAX_FILE_BYTES = 10 * 1024 * 1024;
+  const MAX_LISTED = 100;
+  const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const READ_ERRORS = {
+    'old-excel':'זהו קובץ Excel בפורמט ישן (xls). פתח אותו ב־Excel ושמור בשם כ־xlsx או CSV.',
+    'not-zip':'הקובץ פגום או שאינו קובץ Excel תקין.',
+    'too-large':'הקובץ גדול מדי.',
+    'no-sheet':'לא נמצא גיליון בקובץ.',
+    'no-name-column':'לא נמצאה עמודת שם. בשורת הכותרות צריכה להיות עמודה בשם "שם הלקוח".',
+    'too-many-rows':'בקובץ יש יותר מ־5,000 שורות. פצל אותו לכמה קבצים.'
+  };
+  let pendingImport = null;
+
+  function downloadRows(rows, format, baseName) {
+    const name = `${baseName}-${new Date().toISOString().slice(0,10)}.${format}`;
+    const blob = format === 'csv' ? new Blob([toCsv(rows)], { type:'text/csv;charset=utf-8' }) : new Blob([writeXlsx(rows, 'לקוחות')], { type:XLSX_TYPE });
+    const url = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement('a'), { href:url, download:name });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+  const transferHead = (eyebrow, title) => `<div class="h-viewer-head"><div><p class="v-eyebrow">${safe(eyebrow)}</p><h2>${safe(title)}</h2></div><button type="button" class="v-button" data-close>סגירה</button></div>`;
+  function openExport() {
+    transfer.innerHTML = `<div class="h-viewer-body">${transferHead('תיקי לקוחות', 'ייצוא לקובץ')}
+      <p class="x-transfer-text">הקובץ יכלול את כל ${customers.length} הלקוחות עם פרטי הקשר, החבילה, המחיר וההערות. יומן הפעילות והתמונות לא נכללים.</p>
+      <div class="x-picker-actions"><button type="button" class="v-button primary" data-export="xlsx" ${customers.length ? '' : 'disabled'}>הורדת קובץ Excel</button><button type="button" class="v-button" data-export="csv" ${customers.length ? '' : 'disabled'}>הורדת קובץ CSV</button></div></div>`;
+    if (!transfer.open) transfer.showModal();
+  }
+  function openImport(error = '') {
+    pendingImport = null;
+    transfer.innerHTML = `<div class="h-viewer-body">${transferHead('תיקי לקוחות', 'ייבוא מקובץ')}
+      <p class="x-transfer-text">אפשר לטעון קובץ Excel (xlsx) או CSV. בשורה הראשונה צריכות להיות כותרות העמודות, ועמודת "שם הלקוח" היא חובה. לפני השמירה תוצג בדיקת כפילויות, ושום דבר לא יישמר בלי אישור.</p>
+      ${error ? `<p class="x-transfer-error" role="alert">${safe(error)}</p>` : ''}
+      <div class="x-picker-actions"><label class="v-button primary">בחירת קובץ<input type="file" accept=".xlsx,.csv,text/csv,${XLSX_TYPE}" hidden data-import-file></label><button type="button" class="v-button" data-sample>הורדת קובץ לדוגמה</button></div></div>`;
+    if (!transfer.open) transfer.showModal();
+  }
+  const rowDetails = customer => [customer.phone, customer.email, customer.address].filter(Boolean).join(' · ');
+  const importRow = (customer, note = '', control = '') => `<li class="x-import-row">${control}<span><b>${safe(customer.name)}</b><small>${safe(rowDetails(customer) || 'ללא פרטי קשר')}</small>${note ? `<small class="x-import-note">${safe(note)}</small>` : ''}</span></li>`;
+  const importGroup = (title, count, rows, open = false, tone = '') => {
+    if (!count) return '';
+    const more = count > MAX_LISTED ? `<li class="x-import-more">ועוד ${count - MAX_LISTED} שורות</li>` : '';
+    return `<details class="x-import-group ${tone}" ${open ? 'open' : ''}><summary>${safe(title)}<span class="t-tab-count">${count}</span></summary><ul>${rows.slice(0, MAX_LISTED).join('')}${more}</ul></details>`;
+  };
+  const matchNote = ({ customer, reason, match }) => `שורה ${customer.line}: ${reason} כמו ${match.name}`;
+  function renderImportCheck() {
+    const { fileName, skipped, unknownColumns, check } = pendingImport;
+    const fillable = check.existingMatches.filter(({ customer, match }) => fillMissing(match, customer).changed.length).length;
+    const counts = [['חדשים', check.fresh.length], ['כבר קיימים', check.existingMatches.length], ['אולי כפולים', check.possibleMatches.length], ['חוזרים בקובץ', check.fileRepeats.length]];
+    transfer.innerHTML = `<div class="h-viewer-body">${transferHead(fileName, 'בדיקת כפילויות')}
+      <div class="x-import-counts">${counts.map(([label, count]) => `<div><b>${count}</b><small>${label}</small></div>`).join('')}</div>
+      ${importGroup('לקוחות חדשים שיתווספו', check.fresh.length, check.fresh.map(customer => importRow(customer)))}
+      ${importGroup('אולי כפולים: סמן את מי להוסיף בכל זאת', check.possibleMatches.length, check.possibleMatches.map(item => importRow(item.customer, matchNote(item), `<input type="checkbox" data-possible="${item.customer.line}" aria-label="להוסיף את ${safe(item.customer.name)}">`)), true, 'warn')}
+      ${importGroup('כבר קיימים באפליקציה', check.existingMatches.length, check.existingMatches.map(item => importRow(item.customer, matchNote(item))))}
+      ${fillable ? `<fieldset class="x-import-choice"><legend>מה לעשות עם לקוחות שכבר קיימים?</legend><label><input type="radio" name="existing" value="skip" checked> לא לשנות אותם</label><label><input type="radio" name="existing" value="fill"> להשלים פרטים חסרים אצל ${fillable} לקוחות. פרטים קיימים לא ישתנו</label></fieldset>` : ''}
+      ${importGroup('שורות שחוזרות בקובץ ולא ייובאו', check.fileRepeats.length, check.fileRepeats.map(item => importRow(item.customer, matchNote(item))))}
+      ${importGroup('שורות שלא ייובאו', skipped.length, skipped.map(item => `<li class="x-import-row"><span><b>שורה ${item.line}</b><small>${safe(item.reason)}</small></span></li>`), true, 'warn')}
+      ${unknownColumns.length ? `<p class="x-transfer-text">עמודות שלא ייובאו: ${safe(unknownColumns.join(', '))}</p>` : ''}
+      <p class="x-transfer-text">כשחסרים בקובץ סוג, חבילה או סטטוס, הלקוח יקבל לקוח פרטי, תחזוקה חודשית ופעיל. אפשר לשנות זאת בתיק הלקוח.</p>
+      <div class="v-dialog-actions"><button type="button" class="v-button primary" data-import-confirm></button><button type="button" class="v-button" data-import-again>קובץ אחר</button></div></div>`;
+    updateImportButton();
+  }
+  function updateImportButton() {
+    const button = transfer.querySelector('[data-import-confirm]');
+    if (!button) return;
+    const added = pendingImport.check.fresh.length + transfer.querySelectorAll('[data-possible]:checked').length;
+    const filling = transfer.querySelector('[name="existing"]:checked')?.value === 'fill';
+    button.disabled = !added && !filling;
+    button.textContent = added ? `הוספת ${added} לקוחות` : filling ? 'השלמת פרטים' : 'אין לקוחות חדשים';
+  }
+  async function loadImportFile(file) {
+    if (file.size > MAX_FILE_BYTES) { openImport('הקובץ גדול מ־10MB.'); return; }
+    let rows;
+    try { rows = await readSpreadsheet(file.name, new Uint8Array(await file.arrayBuffer())); }
+    catch (error) { openImport(READ_ERRORS[error.message] || 'לא ניתן לקרוא את הקובץ.'); return; }
+    const parsed = rowsToCustomers(rows);
+    if (parsed.error) { openImport(READ_ERRORS[parsed.error]); return; }
+    if (!parsed.customers.length) { openImport('לא נמצאו לקוחות בקובץ.'); return; }
+    pendingImport = { fileName:file.name, incoming:parsed.customers, skipped:parsed.skipped, unknownColumns:parsed.unknownColumns, check:checkDuplicates(parsed.customers, customers) };
+    renderImportCheck();
+  }
+  function applyImport() {
+    const at = Date.now();
+    // Checked again here, since a shared customer list may have changed while the screen was open.
+    const check = checkDuplicates(pendingImport.incoming, customers);
+    const chosen = new Set([...transfer.querySelectorAll('[data-possible]:checked')].map(box => Number(box.dataset.possible)));
+    const filling = transfer.querySelector('[name="existing"]:checked')?.value === 'fill';
+    const added = [...check.fresh, ...check.possibleMatches.filter(item => chosen.has(item.customer.line)).map(item => item.customer)].map(({ line, ...customer }) => ({
+      ...customer, id:newId('cust'), type:customer.type || TYPES[0], plan:customer.plan || PLANS[0], status:customer.status || 'active',
+      log:[{ id:newId('log'), kind:'note', text:'התיק יובא מקובץ', at }]
+    }));
+    const filled = new Map();
+    if (filling) check.existingMatches.forEach(({ customer, match }) => {
+      const { merged, changed } = fillMissing(filled.get(match.id) || match, customer);
+      if (changed.length) filled.set(match.id, merged);
+    });
+    filled.forEach(customer => { customer.log = [...(customer.log || []), { id:newId('log'), kind:'note', text:'פרטים הושלמו מקובץ', at }]; });
+    const previous = customers;
+    customers = [...customers.map(customer => filled.get(customer.id) || customer), ...added];
+    try {
+      if (window.esekliStore) window.esekliStore.write(STORAGE_KEY, customers, `ייבוא מהקובץ ${pendingImport.fileName}`);
+      else localStorage.setItem(STORAGE_KEY, JSON.stringify(customers));
+    } catch {
+      customers = previous;
+      toast('אין מספיק מקום לשמירת הלקוחות. שום דבר לא יובא.');
+      return;
+    }
+    pendingImport = null;
+    state.filter = 'all';
+    transfer.close();
+    render();
+    const done = [added.length ? `נוספו ${added.length} לקוחות` : '', filled.size ? `הושלמו פרטים אצל ${filled.size} לקוחות` : ''].filter(Boolean).join(', ');
+    toast(`${done}. אפשר לשחזר ממסך ההיסטוריה.`);
+  }
+  transfer.addEventListener('click', event => {
+    if (event.target === transfer || event.target.closest('[data-close]')) { pendingImport = null; transfer.close(); return; }
+    const exportButton = event.target.closest('[data-export]');
+    if (exportButton) { downloadRows(customersToRows(customers), exportButton.dataset.export, 'esekli-customers'); transfer.close(); toast('הקובץ ירד למכשיר.'); return; }
+    if (event.target.closest('[data-sample]')) downloadRows(sampleRows(), 'xlsx', 'esekli-customers-sample');
+    if (event.target.closest('[data-import-again]')) openImport();
+    if (event.target.closest('[data-import-confirm]')) applyImport();
+  });
+  transfer.addEventListener('change', event => {
+    if (event.target.matches('[data-import-file]')) { const file = event.target.files?.[0]; if (file) loadImportFile(file); return; }
+    updateImportButton();
+  });
+
   const digits = phone => { const value = String(phone || '').replace(/\D/g,''); return value.startsWith('0') ? `972${value.slice(1)}` : value; };
   const openExternal = url => window.open(url, '_blank', 'noopener,noreferrer');
   root.addEventListener('click', event => {
@@ -277,6 +414,8 @@ if (root) {
     const action = target.dataset.action;
     const customer = byId(state.selectedId);
     if (action === 'new') openDialog();
+    if (action === 'import') openImport();
+    if (action === 'export') openExport();
     if (action === 'filter') { state.filter = target.dataset.filter; render(); }
     if (action === 'open') { state.selectedId = target.dataset.id; render(); window.scrollTo(0,0); }
     if (action === 'back') { state.selectedId = null; render(); }

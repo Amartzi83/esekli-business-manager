@@ -1,6 +1,6 @@
 // Starts the app. On the online address it signs in and loads the shared data before the screens
 // run, so they never create sample data. Anywhere else it runs on this device only, as before.
-const VERSION = '19';
+const VERSION = '20';
 const MODULES = ['store', 'calendar', 'visits', 'tasks', 'shopping', 'reminders', 'customers', 'history'];
 const ONLINE_URL = 'https://esekli-business-manager.web.app/';
 

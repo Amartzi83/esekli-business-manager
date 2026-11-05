@@ -8,8 +8,8 @@ import {
   arrayRemove, arrayUnion, clearIndexedDbPersistence, collection, deleteDoc, deleteField, doc, getDoc, getDocs, initializeFirestore, onSnapshot,
   persistentLocalCache, persistentMultipleTabManager, query, serverTimestamp, setDoc, terminate, Timestamp, updateDoc, where, writeBatch
 } from 'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js';
-import { firebaseConfig } from './firebase-config.js?v=19';
-import { createSync, docIdFor } from './sync.js?v=19';
+import { firebaseConfig } from './firebase-config.js?v=20';
+import { createSync, docIdFor } from './sync.js?v=20';
 
 const SYNCED = [
   { id:'tasks', key:'esekli-tasks-v1', kind:'list' },

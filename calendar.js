@@ -1,4 +1,4 @@
-import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=19";
+import { durationChoices, durationLabel, endTimeOf, workAreas } from "./scheduler.js?v=20";
 
 const DAY_MS = 86400000;
 const FIRST_HOUR = 7;
